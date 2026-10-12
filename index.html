@@ -1,66 +1,37 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="theme-color" content="#146c43">
-<title>Báo cáo trại gà bố mẹ 9.600 con</title>
+<title>BÁO CÁO TRẠI GÀ BỐ MẸ 10.005 CON</title>
 <style>
-:root{
- --green:#146c43;--green2:#198754;--bg:#f3f6f4;
- --text:#20312a;--muted:#718078;--line:#e5ebe7;
- --red:#dc3545;--blue:#2878d0
-}
+:root{--green:#146c43;--green2:#198754;--bg:#f3f6f4;--text:#20312a;--muted:#718078;--line:#e5ebe7;--red:#dc3545;--blue:#2878d0}
 *{box-sizing:border-box}
-body{
- margin:0;background:var(--bg);color:var(--text);
- font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
-}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 button:disabled{opacity:.55;cursor:wait}
-.app{max-width:620px;margin:auto;padding-bottom:35px}
-.header{
- background:linear-gradient(135deg,#105735,#218653);
- color:white;padding:23px 17px 25px;border-radius:0 0 23px 23px
-}
+.app{max-width:620px;margin:auto;padding-bottom:20px}
+.header{background:linear-gradient(135deg,#105735,#218653);color:white;padding:23px 17px 25px;border-radius:0 0 23px 23px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.logo{
- width:43px;height:43px;display:grid;place-items:center;
- background:#ffffff20;border-radius:14px;font-size:24px
-}
+.logo{width:43px;height:43px;display:grid;place-items:center;background:#ffffff20;border-radius:14px;font-size:24px}
 .brand{display:flex;align-items:center;gap:11px}
 .brand small{opacity:.8;display:block;font-size:11px}
 h1{font-size:20px;line-height:1.35;margin:2px 0;font-weight:800}
 .tag{font-size:11px;background:#ffffff20;padding:5px 9px;border-radius:20px}
 .header p{font-size:12px;opacity:.85;margin:15px 0 0}
 .content{padding:13px}
-.summary{
- display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
- margin-bottom:14px
-}
-.stat{
- background:white;border:1px solid var(--line);border-radius:15px;
- padding:13px;min-width:0
-}
+.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.stat{background:white;border:1px solid var(--line);border-radius:15px;padding:13px;min-width:0}
 .stat .label{color:var(--muted);font-size:11px}
 .stat strong{display:block;font-size:23px;letter-spacing:-.5px;margin-top:4px}
 .stat small{color:var(--muted);font-size:11px}
-.green{color:var(--green2)}.red{color:var(--red)}
-.card{
- background:white;border:1px solid var(--line);border-radius:16px;
- margin-bottom:12px;overflow:hidden
-}
-.card-head{
- display:flex;align-items:center;gap:10px;padding:14px;
- border-bottom:1px solid var(--line)
-}
-.num{
- width:30px;height:30px;display:grid;place-items:center;
- border-radius:10px;background:#e8f5ed;color:var(--green);
- font-weight:800;flex-shrink:0
-}
+.green{color:var(--green2)}
+.red{color:var(--red)}
+.card{background:white;border:1px solid var(--line);border-radius:16px;margin-bottom:12px;overflow:hidden}
+.card-head{display:flex;align-items:center;gap:10px;padding:14px;border-bottom:1px solid var(--line)}
+.num{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:#e8f5ed;color:var(--green);font-weight:800;flex-shrink:0}
 .card-head h2{font-size:14px;margin:0;font-weight:800}
 .card-head p{font-size:11px;color:var(--muted);margin:2px 0 0}
 .card-body{padding:14px}
@@ -68,115 +39,59 @@ h1{font-size:20px;line-height:1.35;margin:2px 0;font-weight:800}
 .field{min-width:0}
 .field.full{grid-column:1/-1}
 label{display:block;font-size:12px;font-weight:650;margin-bottom:6px}
-input,select,textarea{
- display:block;width:100%;min-width:0;border:1px solid #dce5df;
- background:#fbfcfb;border-radius:10px;padding:10px 11px;
- color:var(--text);outline:none
-}
-input:focus,select:focus,textarea:focus{
- border-color:#45a574;box-shadow:0 0 0 3px #19875412
-}
+input,select,textarea{display:block;width:100%;min-width:0;border:1px solid #dce5df;background:#fbfcfb;border-radius:10px;padding:10px 11px;color:var(--text);outline:none}
+input:focus,select:focus,textarea:focus{border-color:#45a574;box-shadow:0 0 0 3px #19875412}
 input[type=number]{font-variant-numeric:tabular-nums}
 textarea{min-height:76px;resize:vertical}
 .unit{font-size:10px;color:var(--muted);font-weight:400}
-.result{
- display:flex;justify-content:space-between;align-items:center;gap:10px;
- padding:11px 12px;background:#eff8f2;border-radius:10px;margin-top:12px
-}
+.result{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 12px;background:#eff8f2;border-radius:10px;margin-top:12px}
 .result span{font-size:12px}
 .result strong{color:var(--green);font-size:16px;text-align:right}
 .note{font-size:11px;color:var(--muted);margin:10px 0 0}
 .divider{height:1px;background:var(--line);margin:15px 0}
 .subhead{font-size:12px;font-weight:800;margin:0 0 11px}
 .checkrow{display:flex;flex-wrap:wrap;gap:9px}
-.check{
- display:flex;align-items:center;gap:7px;border:1px solid var(--line);
- border-radius:10px;padding:9px;font-size:12px;flex:1;min-width:110px
-}
+.check{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:10px;padding:9px;font-size:12px;flex:1;min-width:110px}
 .check input{width:16px;height:16px;margin:0;accent-color:var(--green)}
-.actions{
- position:sticky;bottom:0;background:#ffffffed;backdrop-filter:blur(12px);
- border-top:1px solid var(--line);padding:11px 13px;
- display:grid;grid-template-columns:1fr 1fr;gap:9px;z-index:5
-}
-.btn{
- border:0;border-radius:11px;padding:12px 8px;font-weight:750;
- display:flex;align-items:center;justify-content:center;gap:6px
-}
+/* 4 NÚT Ở CUỐI TRANG, KHÔNG GHIM KHI CUỘN */
+.actions{position:static;bottom:auto;background:#ffffff;border-top:1px solid var(--line);padding:12px 13px;display:grid;grid-template-columns:1fr 1fr;gap:9px;z-index:auto;margin:14px 13px 0;border-radius:14px}
+.btn{border:0;border-radius:11px;padding:12px 8px;font-weight:750;display:flex;align-items:center;justify-content:center;gap:6px}
 .primary{background:var(--green);color:white}
 .secondary{background:#e9f2ec;color:var(--green)}
 .outline{background:white;border:1px solid var(--line);color:var(--text)}
-.history-item{
- display:flex;justify-content:space-between;align-items:center;
- gap:10px;padding:12px 0;border-bottom:1px solid var(--line)
-}
+.history-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
 .history-item:last-child{border:0}
 .history-item strong{display:block;font-size:13px}
 .history-item small{color:var(--muted);font-size:11px}
-.history-item button{
- border:0;background:#e9f2ec;color:var(--green);
- border-radius:8px;padding:7px 10px;font-weight:700
-}
+.history-item button{border:0;background:#e9f2ec;color:var(--green);border-radius:8px;padding:7px 10px;font-weight:700}
 .empty{color:var(--muted);text-align:center;padding:16px;font-size:12px}
 #photos{font-size:12px}
 .photo-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
 .photo-list img{width:80px;height:80px;object-fit:cover;border-radius:9px}
 .footer{text-align:center;color:var(--muted);font-size:10px;padding:15px}
-@media(min-width:500px){
- .content{padding:16px}
- .summary{grid-template-columns:repeat(4,minmax(0,1fr))}
- .stat strong{font-size:20px}
-}
-@media(max-width:370px){
- .header{padding:18px 12px}
- h1{font-size:17px}
- .tag{font-size:10px}
- .content{padding:9px}
- .card-body{padding:11px}
- .grid{gap:9px}
- .actions{padding:8px;gap:6px}
- .btn{font-size:12px}
-}
-@media print{
- body{background:white;font-size:11px}
- .app{max-width:none}
- .header{background:white!important;color:#111;padding:8px 0;border-radius:0}
- .header p{color:#333;opacity:1}
- .content{padding:5px 0}
- .summary{grid-template-columns:repeat(4,1fr)}
- .stat,.card{break-inside:avoid;border-color:#ccc}
- .actions,.no-print,.footer{display:none!important}
- input,select,textarea{background:white;border-color:transparent;padding:3px 0;box-shadow:none!important}
- textarea{min-height:35px}
- .card-head{padding:8px}.card-body{padding:8px}
- .result{padding:5px}
-}
+.draft-status{font-size:11px;padding:9px 11px;margin-bottom:12px;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--muted)}
+@media(min-width:500px){.content{padding:16px}.summary{grid-template-columns:repeat(4,minmax(0,1fr))}.stat strong{font-size:20px}}
+@media(max-width:370px){.header{padding:18px 12px}h1{font-size:17px}.tag{font-size:10px}.content{padding:9px}.card-body{padding:11px}.grid{gap:9px}.actions{padding:8px;gap:6px;margin-left:9px;margin-right:9px}.btn{font-size:12px}}
+@media print{body{background:white;font-size:11px}.app{max-width:none}.header{background:white!important;color:#111;padding:8px 0;border-radius:0}.header p{color:#333;opacity:1}.content{padding:5px 0}.summary{grid-template-columns:repeat(4,1fr)}.stat,.card{break-inside:avoid;border-color:#ccc}.actions,.no-print,.footer,.draft-status{display:none!important}input,select,textarea{background:white;border-color:transparent;padding:3px 0;box-shadow:none!important}textarea{min-height:35px}.card-head{padding:8px}.card-body{padding:8px}.result{padding:5px}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="header">
  <div class="top">
-  <div class="brand">
-   <div class="logo">🐔</div>
-   <div>
-    <small>QUẢN LÝ CHĂN NUÔI</small>
-    <h1>BÁO CÁO TRẠI GÀ BỐ MẸ</h1>
-   </div>
-  </div>
-  <span class="tag">9.600 CON</span>
+  <div class="brand"><div class="logo">🐔</div><div><small>QUẢN LÝ CHĂN NUÔI</small><h1>BÁO CÁO TRẠI GÀ BỐ MẸ</h1></div></div>
+  <span class="tag">10.004 CON</span>
  </div>
  <p>📋 Báo cáo hằng ngày · Đàn gà · Trứng · Cám · Thiết bị</p>
 </header>
-
 <main class="content">
  <div class="summary">
-  <div class="stat"><div class="label">TỔNG ĐÀN CUỐI NGÀY</div><strong id="sFlock">9.600</strong><small>con</small></div>
+  <div class="stat"><div class="label">TỔNG ĐÀN CUỐI NGÀY</div><strong id="sFlock">10.004</strong><small>con</small></div>
   <div class="stat"><div class="label">TỔNG TRỨNG THU</div><strong id="sEggs">0</strong><small>quả</small></div>
   <div class="stat"><div class="label">TỶ LỆ ĐẺ</div><strong id="sRate">0%</strong><small>trên tổng mái sống đầu ngày</small></div>
   <div class="stat"><div class="label">TỶ LỆ TRỨNG ĐẠT</div><strong id="sQuality">0%</strong><small>trên tổng trứng thu</small></div>
  </div>
-
+ <div id="draftStatus" class="draft-status">Nháp đang lưu trên thiết bị này. Chưa gửi lên D1.</div>
  <form id="reportForm">
  <section class="card">
   <div class="card-head"><div class="num">0</div><div><h2>Thông tin báo cáo</h2><p>Ngày ghi nhận và người phụ trách</p></div></div>
@@ -186,17 +101,16 @@ textarea{min-height:76px;resize:vertical}
    <div class="field full"><label>Ca báo cáo</label><select name="shift"><option>Cả ngày</option><option>Ca sáng</option><option>Ca chiều</option><option>Ca đêm</option></select></div>
   </div>
  </section>
-
  <section class="card">
   <div class="card-head"><div class="num">1</div><div><h2>Đàn gà</h2><p>Theo dõi số lượng sống, chết và loại thải</p></div></div>
   <div class="card-body">
    <div class="grid">
-    <div class="field"><label>Mái sống đầu ngày <span class="unit">(con)</span></label><input name="hensStart" type="number" min="0" value="9000"></div>
-    <div class="field"><label>Trống sống đầu ngày <span class="unit">(con)</span></label><input name="roostersStart" type="number" min="0" value="600"></div>
-    <div class="field"><label>Mái chết <span class="unit">(con)</span></label><input name="hensDead" type="number" min="0" value="0"></div>
-    <div class="field"><label>Trống chết <span class="unit">(con)</span></label><input name="roostersDead" type="number" min="0" value="0"></div>
-    <div class="field"><label>Mái loại thải <span class="unit">(con)</span></label><input name="hensCull" type="number" min="0" value="0"></div>
-    <div class="field"><label>Trống loại thải <span class="unit">(con)</span></label><input name="roostersCull" type="number" min="0" value="0"></div>
+    <div class="field"><label>Mái sống đầu ngày (con)</label><input name="hensStart" type="number" min="0" value="9000"></div>
+    <div class="field"><label>Trống sống đầu ngày (con)</label><input name="roostersStart" type="number" min="0" value="600"></div>
+    <div class="field"><label>Mái chết (con)</label><input name="hensDead" type="number" min="0" value="0"></div>
+    <div class="field"><label>Trống chết (con)</label><input name="roostersDead" type="number" min="0" value="0"></div>
+    <div class="field"><label>Mái loại thải (con)</label><input name="hensCull" type="number" min="0" value="0"></div>
+    <div class="field"><label>Trống loại thải (con)</label><input name="roostersCull" type="number" min="0" value="0"></div>
     <div class="field"><label>Nhập / điều chuyển vào</label><input name="flockIn" type="number" min="0" value="0"></div>
     <div class="field"><label>Điều chuyển ra</label><input name="flockOut" type="number" min="0" value="0"></div>
    </div>
@@ -206,16 +120,15 @@ textarea{min-height:76px;resize:vertical}
    <div class="field" style="margin-top:10px"><label>Mô tả bất thường</label><textarea name="abnormalNote" placeholder="Triệu chứng, số lượng, vị trí chuồng..."></textarea></div>
   </div>
  </section>
-
  <section class="card">
   <div class="card-head"><div class="num">2</div><div><h2>Sản lượng trứng</h2><p>Thu trứng, phân loại và bàn giao kho</p></div></div>
   <div class="card-body">
    <p class="subhead">Số lượng thu theo lượt</p>
    <div class="grid">
-    <div class="field"><label>Lượt 1 <span class="unit">(quả)</span></label><input name="egg1" type="number" min="0" value="0"></div>
-    <div class="field"><label>Lượt 2 <span class="unit">(quả)</span></label><input name="egg2" type="number" min="0" value="0"></div>
-    <div class="field"><label>Lượt 3 <span class="unit">(quả)</span></label><input name="egg3" type="number" min="0" value="0"></div>
-    <div class="field"><label>Lượt khác <span class="unit">(quả)</span></label><input name="eggOther" type="number" min="0" value="0"></div>
+    <div class="field"><label>Lượt 1 (quả)</label><input name="egg1" type="number" min="0" value="0"></div>
+    <div class="field"><label>Lượt 2 (quả)</label><input name="egg2" type="number" min="0" value="0"></div>
+    <div class="field"><label>Lượt 3 (quả)</label><input name="egg3" type="number" min="0" value="0"></div>
+    <div class="field"><label>Lượt khác (quả)</label><input name="eggOther" type="number" min="0" value="0"></div>
    </div>
    <div class="result"><span>Tổng trứng thu</span><strong id="rEggs">0 quả</strong></div>
    <div class="divider"></div>
@@ -231,8 +144,8 @@ textarea{min-height:76px;resize:vertical}
    <div class="divider"></div>
    <p class="subhead">Bàn giao và tồn kho trứng</p>
    <div class="grid">
-    <div class="field"><label>Tồn đầu <span class="unit">(quả)</span></label><input name="eggStockStart" type="number" min="0" value="0"></div>
-    <div class="field"><label>Bàn giao kho <span class="unit">(quả)</span></label><input name="eggHandover" type="number" min="0" value="0"></div>
+    <div class="field"><label>Tồn đầu (quả)</label><input name="eggStockStart" type="number" min="0" value="0"></div>
+    <div class="field"><label>Bàn giao kho (quả)</label><input name="eggHandover" type="number" min="0" value="0"></div>
    </div>
    <div class="result"><span>Tồn cuối dự kiến</span><strong id="rEggStock">0 quả</strong></div>
    <p class="note">Tồn cuối = tồn đầu + tổng trứng thu − bàn giao kho.</p>
@@ -243,7 +156,6 @@ textarea{min-height:76px;resize:vertical}
    </div>
   </div>
  </section>
-
  <section class="card">
   <div class="card-head"><div class="num">3</div><div><h2>Cám – Nước</h2><p>Nhập xuất tồn cám và lượng nước sử dụng</p></div></div>
   <div class="card-body">
@@ -259,7 +171,6 @@ textarea{min-height:76px;resize:vertical}
    <div class="field" style="margin-top:12px"><label>Ghi chú cám – nước</label><textarea name="feedNote" placeholder="Loại cám, số bao, áp lực nước, đường ống..."></textarea></div>
   </div>
  </section>
-
  <section class="card">
   <div class="card-head"><div class="num">4</div><div><h2>Chuồng – Thiết bị</h2><p>Môi trường, điện, nước và vệ sinh</p></div></div>
   <div class="card-body">
@@ -280,7 +191,6 @@ textarea{min-height:76px;resize:vertical}
    <div class="field" style="margin-top:12px"><label>Sự cố thiết bị và cách xử lý</label><textarea name="equipmentNote" placeholder="Mô tả sự cố hoặc ghi Không"></textarea></div>
   </div>
  </section>
-
  <section class="card">
   <div class="card-head"><div class="num">5</div><div><h2>Nhân sự – Công việc</h2><p>Chấm công và theo dõi công việc</p></div></div>
   <div class="card-body">
@@ -294,7 +204,6 @@ textarea{min-height:76px;resize:vertical}
    <div class="field" style="margin-top:12px"><label>Việc chưa xong / sự cố / đề xuất</label><textarea name="pending" placeholder="Việc cần xử lý, người phụ trách, thời hạn..."></textarea></div>
   </div>
  </section>
-
  <section class="card">
   <div class="card-head"><div class="num">6</div><div><h2>Xác nhận – Minh chứng</h2><p>Kiểm tra số liệu trước khi chốt báo cáo</p></div></div>
   <div class="card-body">
@@ -308,7 +217,7 @@ textarea{min-height:76px;resize:vertical}
    <label>Ảnh minh chứng (bảng thu trứng / kho trứng / sự cố)</label>
    <input id="photos" type="file" accept="image/*" multiple>
    <div id="photoList" class="photo-list"></div>
-   <p class="note">Ảnh minh chứng được xem trong phiên hiện tại; chưa tải lên máy chủ.</p>
+   <p class="note">Ảnh chỉ hiển thị trong phiên hiện tại; chưa được lưu vào nháp hoặc tải lên máy chủ.</p>
    <div class="divider"></div>
    <div class="checkrow">
     <label class="check"><input type="checkbox" name="confirmed"> Đã kiểm tra số liệu</label>
@@ -318,7 +227,6 @@ textarea{min-height:76px;resize:vertical}
   </div>
  </section>
  </form>
-
  <section class="card no-print">
   <div class="card-head"><div class="num">↻</div><div><h2>Báo cáo đã lưu</h2><p>Lịch sử báo cáo chung trên máy chủ</p></div></div>
   <div class="card-body">
@@ -329,10 +237,9 @@ textarea{min-height:76px;resize:vertical}
    <div id="history"><div class="empty">Đang tải báo cáo...</div></div>
   </div>
  </section>
-
- <div class="footer">BÁO CÁO TRẠI GÀ BỐ MẸ · Dữ liệu báo cáo lưu trên Cloudflare D1</div>
+ <div class="footer">BÁO CÁO TRẠI GÀ BỐ MẸ · Nháp lưu trên thiết bị; báo cáo hoàn chỉnh lưu trên Cloudflare D1</div>
 </main>
-
+<!-- 4 NÚT NẰM CUỐI TRANG -->
 <div class="actions no-print">
  <button class="btn secondary" type="button" id="saveBtn">💾 Lưu báo cáo</button>
  <button class="btn primary" type="button" id="pdfBtn">📄 Xuất file PDF</button>
@@ -340,543 +247,391 @@ textarea{min-height:76px;resize:vertical}
  <button class="btn outline" type="button" id="resetBtn">＋ Báo cáo mới</button>
 </div>
 </div>
-
-<!-- Thư viện tạo PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
 <script>
 (function(){
- 'use strict';
-
- const WORKER_URL =
-  'https://baocaotraigabome9600con.skzfzqcdfx-08b.workers.dev';
-
- const PASSWORD_KEY = 'chickenFarmWorkerPassword';
- const form = document.getElementById('reportForm');
- const $ = s => document.querySelector(s);
- const fields = [...form.querySelectorAll(
-  'input[name],select[name],textarea[name]'
- )];
-
- const fmt = n => Number(n || 0).toLocaleString('vi-VN',{
-  maximumFractionDigits:2
+'use strict';
+const WORKER_URL='https://baocaotraigabome9600con.skzfzqcdfx-08b.workers.dev';
+const PASSWORD_KEY='chickenFarmWorkerPassword';
+const DRAFT_PREFIX='chickenFarmDraft_';
+const form=document.getElementById('reportForm');
+const $=s=>document.querySelector(s);
+const fields=[...form.querySelectorAll('input[name],select[name],textarea[name]')];
+const fmt=n=>Number(n||0).toLocaleString('vi-VN',{maximumFractionDigits:2});
+const val=n=>Number(form.elements[n]?.value||0);
+const setText=(id,v)=>document.getElementById(id).textContent=v;
+const today=()=>{
+ const d=new Date();
+ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+};
+let photos=[];
+let reports=[];
+let busy=false;
+let restoringDraft=false;
+let draftTimer=null;
+$('#date').value=today();
+function statusDraft(message,color){
+ const el=$('#draftStatus');
+ el.textContent=message;
+ el.style.color=color||'#718078';
+}
+async function getPassword(){
+ let password=localStorage.getItem(PASSWORD_KEY);
+ if(!password) password=prompt('Nhập mã truy cập báo cáo trại gà:');
+ if(!password) throw new Error('Chưa nhập mã truy cập.');
+ const res=await fetch(WORKER_URL+'/api/login',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({password})
  });
- const val = n => Number(form.elements[n]?.value || 0);
- const setText = (id,v) =>
-  document.getElementById(id).textContent = v;
-
- const today = () => {
-  const d = new Date();
-  return new Date(d.getTime()-d.getTimezoneOffset()*60000)
-   .toISOString().slice(0,10);
- };
-
- let photos = [];
- let reports = [];
- let busy = false;
-
- $('#date').value = today();
-
- async function getPassword(){
-  let password = sessionStorage.getItem(PASSWORD_KEY);
-
-  if(!password){
-   password = prompt('Nhập mã truy cập báo cáo trại gà:');
-  }
-
-  if(!password){
-   throw new Error('Chưa nhập mã truy cập.');
-  }
-
-  const res = await fetch(WORKER_URL + '/api/login',{
-   method:'POST',
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({password})
-  });
-
-  let result;
-  try{
-   result = await res.json();
-  }catch(e){
-   throw new Error('Không đọc được phản hồi từ Worker.');
-  }
-
-  if(!res.ok || !result.ok){
-   sessionStorage.removeItem(PASSWORD_KEY);
-   throw new Error(result.error || 'Mã truy cập không đúng.');
-  }
-
-  sessionStorage.setItem(PASSWORD_KEY,password);
-  return password;
+ let result;
+ try{result=await res.json();}
+ catch(e){throw new Error('Không đọc được phản hồi từ Worker.');}
+ if(!res.ok||!result.ok){
+  localStorage.removeItem(PASSWORD_KEY);
+  throw new Error(result.error||'Mã truy cập không đúng.');
  }
-
- async function api(path,options={}){
-  const password = await getPassword();
-  const headers = {
-   ...(options.headers || {}),
-   'X-App-Password':password
-  };
-
-  if(options.body) headers['Content-Type'] = 'application/json';
-
-  const res = await fetch(WORKER_URL + path,{
-   ...options,
-   headers
-  });
-
-  let result;
-  try{
-   result = await res.json();
-  }catch(e){
-   throw new Error('Worker trả về dữ liệu không hợp lệ.');
-  }
-
-  if(res.status === 401){
-   sessionStorage.removeItem(PASSWORD_KEY);
-  }
-
-  if(!res.ok || !result.ok){
-   throw new Error(result.error || 'Không thể thực hiện yêu cầu.');
-  }
-
-  return result;
- }
-
- function calc(){
-  const hens = val('hensStart');
-  const flock = hens + val('roostersStart')
-   - val('hensDead') - val('roostersDead')
-   - val('hensCull') - val('roostersCull')
-   + val('flockIn') - val('flockOut');
-
-  const eggs = val('egg1') + val('egg2')
-   + val('egg3') + val('eggOther');
-
-  const good = val('eggGood');
-  const classified = good + val('eggDirty')
-   + val('eggBroken') + val('eggOtherType');
-
-  const rate = hens > 0 ? eggs / hens * 100 : 0;
-  const quality = eggs > 0 ? good / eggs * 100 : 0;
-  const eggStock = val('eggStockStart') + eggs - val('eggHandover');
-  const feed = val('feedStart') + val('feedIn') - val('feedUsed');
-
-  setText('sFlock',fmt(flock));
-  setText('sEggs',fmt(eggs));
-  setText('sRate',rate.toFixed(2)+'%');
-  setText('sQuality',quality.toFixed(2)+'%');
-  setText('rFlock',fmt(flock)+' con');
-  setText('rEggs',fmt(eggs)+' quả');
-  setText('rClassified',fmt(classified)+' quả');
-  setText('rEggStock',fmt(eggStock)+' quả');
-  setText('rRateInput',rate.toFixed(2)+'%');
-  setText('rQualityInput',quality.toFixed(2)+'%');
-  $('#feedEnd').value = fmt(feed);
-  setText('rFeed',fmt(feed)+' kg');
-
-  $('#eggWarning').textContent =
-   classified > eggs
-    ? '⚠ Tổng phân loại lớn hơn tổng trứng thu. Hãy kiểm tra lại.'
-    : classified < eggs
-     ? 'Còn '+fmt(eggs-classified)+' quả chưa được phân loại.'
-     : '✓ Số trứng phân loại khớp tổng trứng thu.';
-
-  $('#eggWarning').style.color =
-   classified > eggs ? '#dc3545' : '#718078';
-
-  return {flock,eggs,rate,quality,classified,eggStock,feed};
- }
-
- function getData(){
-  const data = {};
-
-  fields.forEach(el=>{
-   data[el.name] = el.type === 'checkbox'
-    ? el.checked
-    : el.value;
-  });
-
-  data.calculated = calc();
-  data.photos = photos.map(p=>({
-   name:p.name,
-   type:p.type
-  }));
-  data.savedAt = new Date().toISOString();
-
-  return data;
- }
-
- function setData(data){
-  fields.forEach(el=>{
-   if(!(el.name in data)) return;
-
-   if(el.type === 'checkbox'){
-    el.checked = !!data[el.name];
-   }else{
-    el.value = data[el.name] ?? '';
-   }
-  });
-
-  photos = [];
-  $('#photos').value = '';
-  $('#photoList').innerHTML = '';
-  calc();
- }
-
- function renderHistory(){
-  const box = $('#history');
-
-  if(!reports.length){
-   box.innerHTML =
-    '<div class="empty">Chưa có báo cáo được lưu trên máy chủ.</div>';
-   return;
-  }
-
-  box.innerHTML = '';
-
-  reports.forEach(report=>{
-   const date = report.date;
-   const data = report.data || {};
-
-   const item = document.createElement('div');
-   item.className = 'history-item';
-
-   const info = document.createElement('div');
-   const title = document.createElement('strong');
-   title.textContent =
-    date.split('-').reverse().join('/')+' · '+
-    (report.manager || 'Chưa ghi tên');
-
-   const sub = document.createElement('small');
-   sub.textContent =
-    'Trứng: '+fmt(data.calculated?.eggs || 0)+
-    ' quả · Đàn cuối: '+
-    fmt(data.calculated?.flock || 0)+' con';
-
-   info.append(title,sub);
-
-   const buttons = document.createElement('div');
-   buttons.style.display = 'flex';
-   buttons.style.gap = '5px';
-
-   const open = document.createElement('button');
-   open.textContent = 'Mở';
-   open.onclick = ()=>{
-    setData(data);
-    window.scrollTo({top:0,behavior:'smooth'});
-   };
-
-   const del = document.createElement('button');
-   del.textContent = 'Xóa';
-   del.style.background = '#fff0f0';
-   del.style.color = '#dc3545';
-
-   del.onclick = async ()=>{
-    if(!confirm(
-     'Xóa báo cáo ngày '+date.split('-').reverse().join('/')+
-     ' trên máy chủ? Tất cả người dùng sẽ không còn thấy báo cáo này.'
-    )) return;
-
-    try{
-     del.disabled = true;
-
-     await api('/api/reports?date='+encodeURIComponent(date),{
-      method:'DELETE'
-     });
-
-     await loadHistory();
-     alert('Đã xóa báo cáo trên máy chủ.');
-    }catch(e){
-     alert('Không xóa được: '+e.message);
-    }finally{
-     del.disabled = false;
-    }
-   };
-
-   buttons.append(open,del);
-   item.append(info,buttons);
-   box.append(item);
-  });
- }
-
- async function loadHistory(){
-  $('#history').innerHTML =
-   '<div class="empty">Đang tải báo cáo từ máy chủ...</div>';
-
-  try{
-   const result = await api('/api/reports');
-   reports = result.reports || [];
-   renderHistory();
-  }catch(e){
-   $('#history').innerHTML = '';
-
-   const message = document.createElement('div');
-   message.className = 'empty';
-   message.textContent = 'Không tải được báo cáo: '+e.message;
-
-   $('#history').append(message);
-  }
- }
-
- async function save(){
-  if(busy) return;
-
-  const data = getData();
-
-  if(!data.date){
-   alert('Hãy chọn ngày báo cáo.');
-   return;
-  }
-
-  if(data.calculated.flock < 0){
-   alert('Tổng đàn cuối ngày đang âm. Kiểm tra lại số liệu.');
-   return;
-  }
-
-  if(data.calculated.eggStock < 0){
-   alert('Tồn trứng cuối đang âm. Kiểm tra số liệu bàn giao.');
-   return;
-  }
-
-  if(data.calculated.feed < 0){
-   alert('Tồn cám cuối đang âm. Kiểm tra số liệu.');
-   return;
-  }
-
-  if(data.calculated.classified > data.calculated.eggs){
-   if(!confirm(
-    'Tổng phân loại trứng lớn hơn tổng trứng thu. Vẫn lưu báo cáo?'
-   )) return;
-  }
-
-  const btn = $('#saveBtn');
-  const oldText = btn.textContent;
-
-  try{
-   busy = true;
-   btn.disabled = true;
-   btn.textContent = 'Đang lưu...';
-
-   await api('/api/reports',{
-    method:'POST',
-    body:JSON.stringify(data)
-   });
-
-   await loadHistory();
-
-   alert('Đã lưu báo cáo ngày '+
-    data.date.split('-').reverse().join('/')+
-    ' lên máy chủ thành công.');
-  }catch(e){
-   alert('Lưu báo cáo thất bại: '+e.message);
-  }finally{
-   busy = false;
-   btn.disabled = false;
-   btn.textContent = oldText;
-  }
- }
-
- /*
-  * XUẤT PDF:
-  * - Xuất phần báo cáo, không xuất thanh nút thao tác/lịch sử.
-  * - Tạo PDF A4 nhiều trang, không gọi window.print().
-  * - Chia nội dung thành từng trang để không bị cắt mất phần cuối.
-  */
- async function exportPDF(){
-  if(busy) return;
-
-  const btn = $('#pdfBtn');
-  const oldText = btn.textContent;
-
-  try{
-   if(!window.html2canvas || !window.jspdf){
-    throw new Error(
-     'Chưa tải được thư viện PDF. Kiểm tra mạng rồi tải lại trang.'
-    );
-   }
-
-   busy = true;
-   btn.disabled = true;
-   btn.textContent = 'Đang tạo PDF...';
-
-   const source = document.querySelector('.content');
-   const canvas = await html2canvas(source,{
-    scale:2,
-    useCORS:true,
-    backgroundColor:'#ffffff',
-    logging:false,
-    windowWidth:source.scrollWidth,
-    onclone:function(clonedDoc){
-     const clonedContent = clonedDoc.querySelector('.content');
-     clonedContent.style.width = '760px';
-     clonedContent.style.maxWidth = 'none';
-     clonedContent.style.padding = '16px';
-     clonedContent.style.background = '#ffffff';
-
-     clonedDoc.querySelectorAll('.no-print').forEach(el=>{
-      el.style.display = 'none';
-     });
-
-     clonedDoc.querySelectorAll('input,select,textarea').forEach(el=>{
-      if(el.type === 'checkbox'){
-       el.style.accentColor = '#146c43';
-      }else{
-       el.style.color = '#20312a';
-       el.style.backgroundColor = '#ffffff';
-       el.style.boxShadow = 'none';
-      }
-     });
-
-     clonedDoc.body.style.background = '#ffffff';
-    }
-   });
-
-   const {jsPDF} = window.jspdf;
-   const pdf = new jsPDF({
-    orientation:'portrait',
-    unit:'mm',
-    format:'a4',
-    compress:true
-   });
-
-   const pageWidth = pdf.internal.pageSize.getWidth();
-   const pageHeight = pdf.internal.pageSize.getHeight();
-   const margin = 8;
-   const printableWidth = pageWidth - margin * 2;
-   const printableHeight = pageHeight - margin * 2;
-
-   const pxPerMm = canvas.width / printableWidth;
-   const pageCanvasHeight = Math.floor(printableHeight * pxPerMm);
-
-   let y = 0;
-   let page = 0;
-
-   while(y < canvas.height){
-    const sliceHeight = Math.min(
-     pageCanvasHeight,
-     canvas.height - y
-    );
-
-    const pageCanvas = document.createElement('canvas');
-    pageCanvas.width = canvas.width;
-    pageCanvas.height = sliceHeight;
-
-    const ctx = pageCanvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0,0,pageCanvas.width,pageCanvas.height);
-
-    ctx.drawImage(
-     canvas,
-     0,y,
-     canvas.width,sliceHeight,
-     0,0,
-     canvas.width,sliceHeight
-    );
-
-    const imageData = pageCanvas.toDataURL('image/jpeg',0.92);
-    const renderedHeight = sliceHeight / pxPerMm;
-
-    if(page > 0) pdf.addPage();
-
-    pdf.addImage(
-     imageData,
-     'JPEG',
-     margin,
-     margin,
-     printableWidth,
-     renderedHeight,
-     undefined,
-     'FAST'
-    );
-
-    y += sliceHeight;
-    page++;
-   }
-
-   const date = $('#date').value || today();
-   pdf.save('Bao-cao-trai-ga-'+date+'.pdf');
-
-  }catch(e){
-   console.error('PDF export error:',e);
-   alert('Không xuất được PDF: '+e.message);
-  }finally{
-   busy = false;
-   btn.disabled = false;
-   btn.textContent = oldText;
-  }
- }
-
+ localStorage.setItem(PASSWORD_KEY,password);
+ return password;
+}
+async function api(path,options={}){
+ const password=await getPassword();
+ const headers={...(options.headers||{}),'X-App-Password':password};
+ if(options.body) headers['Content-Type']='application/json';
+ const res=await fetch(WORKER_URL+path,{...options,headers});
+ let result;
+ try{result=await res.json();}
+ catch(e){throw new Error('Worker trả về dữ liệu không hợp lệ.');}
+ if(res.status===401) localStorage.removeItem(PASSWORD_KEY);
+ if(!res.ok||!result.ok) throw new Error(result.error||'Không thể thực hiện yêu cầu.');
+ return result;
+}
+function calc(){
+ const hens=val('hensStart');
+ const flock=hens+val('roostersStart')-val('hensDead')-val('roostersDead')-val('hensCull')-val('roostersCull')+val('flockIn')-val('flockOut');
+ const eggs=val('egg1')+val('egg2')+val('egg3')+val('eggOther');
+ const good=val('eggGood');
+ const classified=good+val('eggDirty')+val('eggBroken')+val('eggOtherType');
+ const rate=hens>0?eggs/hens*100:0;
+ const quality=eggs>0?good/eggs*100:0;
+ const eggStock=val('eggStockStart')+eggs-val('eggHandover');
+ const feed=val('feedStart')+val('feedIn')-val('feedUsed');
+ setText('sFlock',fmt(flock));
+ setText('sEggs',fmt(eggs));
+ setText('sRate',rate.toFixed(2)+'%');
+ setText('sQuality',quality.toFixed(2)+'%');
+ setText('rFlock',fmt(flock)+' con');
+ setText('rEggs',fmt(eggs)+' quả');
+ setText('rClassified',fmt(classified)+' quả');
+ setText('rEggStock',fmt(eggStock)+' quả');
+ $('#rRateInput').value = rate.toFixed(2) + '%';
+$('#rQualityInput').value = quality.toFixed(2) + '%';
+ $('#feedEnd').value=fmt(feed);
+ setText('rFeed',fmt(feed)+' kg');
+ $('#eggWarning').textContent=classified>eggs
+  ?'⚠ Tổng phân loại lớn hơn tổng trứng thu. Hãy kiểm tra lại.'
+  :classified<eggs
+   ?'Còn '+fmt(eggs-classified)+' quả chưa được phân loại.'
+   :'✓ Số trứng phân loại khớp tổng trứng thu.';
+ $('#eggWarning').style.color=classified>eggs?'#dc3545':'#718078';
+ return {flock,eggs,rate,quality,classified,eggStock,feed};
+}
+function getData(){
+ const data={};
  fields.forEach(el=>{
-  el.addEventListener('input',calc);
-  el.addEventListener('change',calc);
+  data[el.name]=el.type==='checkbox'?el.checked:el.value;
  });
-
- $('#saveBtn').addEventListener('click',save);
- $('#pdfBtn').addEventListener('click',exportPDF);
-
- $('#resetBtn').addEventListener('click',()=>{
-  if(!confirm('Tạo báo cáo mới? Những nội dung chưa lưu sẽ bị xóa.')){
-   return;
-  }
-
-  form.reset();
-  $('#date').value = today();
-  photos = [];
-  $('#photos').value = '';
-  $('#photoList').innerHTML = '';
-  calc();
-  window.scrollTo({top:0,behavior:'smooth'});
+ data.calculated=calc();
+ data.photos=photos.map(p=>({name:p.name,type:p.type}));
+ data.savedAt=new Date().toISOString();
+ return data;
+}
+function setData(data){
+ fields.forEach(el=>{
+  if(!(el.name in data)) return;
+  if(el.type==='checkbox') el.checked=!!data[el.name];
+  else el.value=data[el.name]??'';
  });
-
- $('#exportBtn').addEventListener('click',()=>{
-  const data = getData();
-  const blob = new Blob(
-   [JSON.stringify(data,null,2)],
-   {type:'application/json;charset=utf-8'}
-  );
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-
-  a.href = url;
-  a.download = 'bao-cao-trai-ga-'+(data.date || today())+'.json';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
- });
-
- $('#photos').addEventListener('change',e=>{
-  photos = Array.from(e.target.files || []);
-  const list = $('#photoList');
-  list.innerHTML = '';
-
-  photos.forEach(file=>{
-   const img = document.createElement('img');
-   img.alt = file.name;
-   img.title = file.name;
-
-   const reader = new FileReader();
-   reader.onload = ev => img.src = ev.target.result;
-   reader.readAsDataURL(file);
-
-   list.append(img);
-  });
- });
-
- $('#refreshBtn').addEventListener('click',loadHistory);
-
- $('#logoutBtn').addEventListener('click',()=>{
-  sessionStorage.removeItem(PASSWORD_KEY);
-  alert('Đã xóa mã truy cập khỏi phiên hiện tại. Nhập lại mã khi sử dụng tiếp.');
-  loadHistory();
- });
-
- form.addEventListener('submit',e=>e.preventDefault());
-
+ photos=[];
+ $('#photos').value='';
+ $('#photoList').innerHTML='';
  calc();
+}
+/* LƯU NHÁP CHỈ TRÊN THIẾT BỊ, KHÔNG GỌI API D1 */
+function saveLocalDraft(){
+ if(restoringDraft) return;
+ const date=$('#date').value;
+ if(!date) return;
+ try{
+  const data=getData();
+  localStorage.setItem(DRAFT_PREFIX+date,JSON.stringify(data));
+  statusDraft('✓ Nháp ngày '+date.split('-').reverse().join('/')+' đã tự lưu trên thiết bị. Chưa gửi lên D1.','#146c43');
+ }catch(e){
+  statusDraft('Không lưu được nháp trên thiết bị. Có thể bộ nhớ trình duyệt đã đầy.','#dc3545');
+ }
+}
+function scheduleDraftSave(){
+ if(restoringDraft) return;
+ statusDraft('Đang lưu nháp trên thiết bị…');
+ clearTimeout(draftTimer);
+ draftTimer=setTimeout(saveLocalDraft,350);
+}
+function restoreDraft(date,resetWhenMissing){
+ if(!date) return false;
+ clearTimeout(draftTimer);
+ restoringDraft=true;
+ try{
+  const raw=localStorage.getItem(DRAFT_PREFIX+date);
+  if(raw){
+   const data=JSON.parse(raw);
+   setData(data);
+   $('#date').value=date;
+   statusDraft('✓ Đã khôi phục nháp ngày '+date.split('-').reverse().join('/')+'. Chưa gửi lên D1.','#146c43');
+   return true;
+  }
+  if(resetWhenMissing){
+   form.reset();
+   $('#date').value=date;
+   photos=[];
+   $('#photos').value='';
+   $('#photoList').innerHTML='';
+   calc();
+   statusDraft('Ngày này chưa có nháp. Điền báo cáo mới; dữ liệu sẽ tự lưu trên thiết bị.');
+  }else{
+   statusDraft('Chưa có nháp cho ngày này. Nhập liệu sẽ tự lưu trên thiết bị.');
+  }
+  return false;
+ }catch(e){
+  statusDraft('Không đọc được nháp của ngày này.','#dc3545');
+  return false;
+ }finally{
+  restoringDraft=false;
+ }
+}
+function renderHistory(){
+ const box=$('#history');
+ if(!reports.length){
+  box.innerHTML='<div class="empty">Chưa có báo cáo được lưu trên máy chủ.</div>';
+  return;
+ }
+ box.innerHTML='';
+ reports.forEach(report=>{
+  const date=report.date;
+  const data=report.data||{};
+  const item=document.createElement('div');
+  item.className='history-item';
+  const info=document.createElement('div');
+  const title=document.createElement('strong');
+  title.textContent=date.split('-').reverse().join('/')+' · '+(report.manager||'Chưa ghi tên');
+  const sub=document.createElement('small');
+  sub.textContent='Trứng: '+fmt(data.calculated?.eggs||0)+' quả · Đàn cuối: '+fmt(data.calculated?.flock||0)+' con';
+  info.append(title,sub);
+  const buttons=document.createElement('div');
+  buttons.style.display='flex';
+  buttons.style.gap='5px';
+  const open=document.createElement('button');
+  open.textContent='Mở';
+  open.onclick=()=>{
+   setData(data);
+   if(data.date) $('#date').value=data.date;
+   statusDraft('Đang xem báo cáo đã lưu trên D1. Khi chỉnh sửa, nháp sẽ tự lưu trên thiết bị.');
+   window.scrollTo({top:0,behavior:'smooth'});
+  };
+  const del=document.createElement('button');
+  del.textContent='Xóa';
+  del.style.background='#fff0f0';
+  del.style.color='#dc3545';
+  del.onclick=async()=>{
+   if(!confirm('Xóa báo cáo ngày '+date.split('-').reverse().join('/')+' trên máy chủ? Tất cả người dùng sẽ không còn thấy báo cáo này.')) return;
+   try{
+    del.disabled=true;
+    await api('/api/reports?date='+encodeURIComponent(date),{method:'DELETE'});
+    await loadHistory();
+    alert('Đã xóa báo cáo trên máy chủ.');
+   }catch(e){
+    alert('Không xóa được: '+e.message);
+   }finally{
+    del.disabled=false;
+   }
+  };
+  buttons.append(open,del);
+  item.append(info,buttons);
+  box.append(item);
+ });
+}
+async function loadHistory(){
+ $('#history').innerHTML='<div class="empty">Đang tải báo cáo từ máy chủ...</div>';
+ try{
+  const result=await api('/api/reports');
+  reports=result.reports||[];
+  renderHistory();
+ }catch(e){
+  $('#history').innerHTML='';
+  const message=document.createElement('div');
+  message.className='empty';
+  message.textContent='Không tải được báo cáo: '+e.message;
+  $('#history').append(message);
+ }
+}
+/* CHỈ NÚT LƯU BÁO CÁO MỚI GỬI DỮ LIỆU LÊN D1 */
+async function save(){
+ if(busy) return;
+ const data=getData();
+ if(!data.date){alert('Hãy chọn ngày báo cáo.');return;}
+ if(data.calculated.flock<0){alert('Tổng đàn cuối ngày đang âm. Kiểm tra lại số liệu.');return;}
+ if(data.calculated.eggStock<0){alert('Tồn trứng cuối đang âm. Kiểm tra số liệu bàn giao.');return;}
+ if(data.calculated.feed<0){alert('Tồn cám cuối đang âm. Kiểm tra số liệu.');return;}
+ if(data.calculated.classified>data.calculated.eggs){
+  if(!confirm('Tổng phân loại trứng lớn hơn tổng trứng thu. Vẫn lưu báo cáo?')) return;
+ }
+ const btn=$('#saveBtn');
+ const oldText=btn.textContent;
+ try{
+  busy=true;
+  btn.disabled=true;
+  btn.textContent='Đang lưu lên D1…';
+  await api('/api/reports',{method:'POST',body:JSON.stringify(data)});
+  saveLocalDraft();
+  await loadHistory();
+  alert('Đã lưu báo cáo ngày '+data.date.split('-').reverse().join('/')+' lên máy chủ thành công.');
+ }catch(e){
+  alert('Lưu báo cáo thất bại: '+e.message);
+ }finally{
+  busy=false;
+  btn.disabled=false;
+  btn.textContent=oldText;
+ }
+}
+async function exportPDF(){
+ if(busy) return;
+ const btn=$('#pdfBtn');
+ const oldText=btn.textContent;
+ try{
+  if(!window.html2canvas||!window.jspdf) throw new Error('Chưa tải được thư viện PDF. Kiểm tra mạng rồi tải lại trang.');
+  busy=true;
+  btn.disabled=true;
+  btn.textContent='Đang tạo PDF…';
+  const source=document.querySelector('.content');
+  const canvas=await html2canvas(source,{
+   scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false,
+   windowWidth:source.scrollWidth,
+   onclone:function(clonedDoc){
+    const clonedContent=clonedDoc.querySelector('.content');
+    clonedContent.style.width='760px';
+    clonedContent.style.maxWidth='none';
+    clonedContent.style.padding='16px';
+    clonedContent.style.background='#ffffff';
+    clonedDoc.querySelectorAll('.no-print').forEach(el=>el.style.display='none');
+    clonedDoc.querySelectorAll('input,select,textarea').forEach(el=>{
+     if(el.type==='checkbox') el.style.accentColor='#146c43';
+     else{
+      el.style.color='#20312a';
+      el.style.backgroundColor='#ffffff';
+      el.style.boxShadow='none';
+     }
+    });
+    clonedDoc.body.style.background='#ffffff';
+   }
+  });
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+  const pageWidth=pdf.internal.pageSize.getWidth();
+  const pageHeight=pdf.internal.pageSize.getHeight();
+  const margin=8;
+  const printableWidth=pageWidth-margin*2;
+  const printableHeight=pageHeight-margin*2;
+  const pxPerMm=canvas.width/printableWidth;
+  const pageCanvasHeight=Math.floor(printableHeight*pxPerMm);
+  let y=0;
+  let page=0;
+  while(y<canvas.height){
+   const sliceHeight=Math.min(pageCanvasHeight,canvas.height-y);
+   const pageCanvas=document.createElement('canvas');
+   pageCanvas.width=canvas.width;
+   pageCanvas.height=sliceHeight;
+   const ctx=pageCanvas.getContext('2d');
+   ctx.fillStyle='#ffffff';
+   ctx.fillRect(0,0,pageCanvas.width,pageCanvas.height);
+   ctx.drawImage(canvas,0,y,canvas.width,sliceHeight,0,0,canvas.width,sliceHeight);
+   const imageData=pageCanvas.toDataURL('image/jpeg',0.92);
+   const renderedHeight=sliceHeight/pxPerMm;
+   if(page>0) pdf.addPage();
+   pdf.addImage(imageData,'JPEG',margin,margin,printableWidth,renderedHeight,undefined,'FAST');
+   y+=sliceHeight;
+   page++;
+  }
+  const date=$('#date').value||today();
+  pdf.save('Bao-cao-trai-ga-'+date+'.pdf');
+ }catch(e){
+  console.error('PDF export error:',e);
+  alert('Không xuất được PDF: '+e.message);
+ }finally{
+  busy=false;
+  btn.disabled=false;
+  btn.textContent=oldText;
+ }
+}
+/* TỰ LƯU NHÁP MỖI KHI NHẬP LIỆU HOẶC THAY ĐỔI */
+fields.forEach(el=>{
+ el.addEventListener('input',()=>{
+  calc();
+  if(el.name!=='date') scheduleDraftSave();
+ });
+ el.addEventListener('change',()=>{
+  if(el.name==='date'){
+   restoreDraft(el.value,true);
+  }else{
+   calc();
+   scheduleDraftSave();
+  }
+ });
+});
+$('#saveBtn').addEventListener('click',save);
+$('#pdfBtn').addEventListener('click',exportPDF);
+$('#resetBtn').addEventListener('click',()=>{
+ if(!confirm('Tạo báo cáo mới cho hôm nay? Nháp cũ vẫn được giữ theo từng ngày.')) return;
+ restoreDraft(today(),true);
+ window.scrollTo({top:0,behavior:'smooth'});
+});
+$('#exportBtn').addEventListener('click',()=>{
+ const data=getData();
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;
+ a.download='bao-cao-trai-ga-'+(data.date||today())+'.json';
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+$('#photos').addEventListener('change',e=>{
+ photos=Array.from(e.target.files||[]);
+ const list=$('#photoList');
+ list.innerHTML='';
+ photos.forEach(file=>{
+  const img=document.createElement('img');
+  img.alt=file.name;
+  img.title=file.name;
+  const reader=new FileReader();
+  reader.onload=ev=>img.src=ev.target.result;
+  reader.readAsDataURL(file);
+  list.append(img);
+ });
+ scheduleDraftSave();
+});
+$('#refreshBtn').addEventListener('click',loadHistory);
+$('#logoutBtn').addEventListener('click',()=>{
+ localStorage.removeItem(PASSWORD_KEY);
+ alert('Đã xóa mã truy cập đã lưu. Lần tiếp theo sẽ yêu cầu nhập lại mã.');
  loadHistory();
+});
+form.addEventListener('submit',e=>e.preventDefault());
+calc();
+/* MỞ TRANG: KHÔI PHỤC NHÁP HÔM NAY NẾU CÓ */
+restoreDraft(today(),false);
+loadHistory();
 })();
 </script>
 </body>
