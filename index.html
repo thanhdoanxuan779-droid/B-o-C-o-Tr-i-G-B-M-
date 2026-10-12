@@ -76,7 +76,32 @@ textarea{min-height:76px;resize:vertical}
 </style>
 </head>
 <body>
-<div class="app">
+
+<div id="loginScreen" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#eaf5ee,#f5f8f6);display:flex;align-items:center;justify-content:center;padding:22px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <div style="background:#fff;padding:28px 23px;border-radius:24px;width:100%;max-width:360px;box-shadow:0 15px 45px #146c4318;border:1px solid #e5ebe7">
+    <div style="text-align:center;margin-bottom:26px">
+      <div style="width:76px;height:76px;border-radius:24px;background:#e5f5eb;display:flex;align-items:center;justify-content:center;font-size:39px;margin:0 auto 16px">🐔</div>
+      <div style="font-size:21px;font-weight:800;color:#146c43">TRẠI GÀ BỐ MẸ</div>
+      <div style="font-size:12px;color:#718078;margin-top:6px">HỆ THỐNG QUẢN LÝ VÀ BÁO CÁO</div>
+    </div>
+
+    <div style="font-size:14px;font-weight:700;color:#20312a;margin-bottom:9px">Mã truy cập</div>
+    <div style="display:flex;align-items:center;gap:10px;border:1px solid #dce5df;background:#fbfcfb;border-radius:13px;padding:0 13px">
+      <span style="font-size:19px">🔒</span>
+      <input id="loginPassword" type="password" placeholder="Nhập mã truy cập" autocomplete="current-password" style="border:0;box-shadow:none;background:transparent;padding:15px 0;flex:1;min-width:0;outline:none">
+    </div>
+
+    <div id="loginError" style="color:#dc3545;font-size:12px;min-height:18px;margin-top:8px"></div>
+
+    <button id="loginBtn" type="button" style="width:100%;border:0;border-radius:13px;padding:15px;background:linear-gradient(135deg,#146c43,#198754);color:white;font-size:15px;font-weight:800;box-shadow:0 6px 15px #146c4330">
+      VÀO ỨNG DỤNG　→
+    </button>
+
+    <div style="text-align:center;font-size:11px;color:#718078;margin-top:19px">🛡️ Truy cập được bảo vệ bằng mã</div>
+  </div>
+</div>
+
+<div id="mainApp" style="display:none">
 <header class="header">
  <div class="top">
   <div class="brand"><div class="logo">🐔</div><div><small>QUẢN LÝ CHĂN NUÔI</small><h1>BÁO CÁO TRẠI GÀ BỐ MẸ</h1></div></div>
@@ -247,6 +272,8 @@ textarea{min-height:76px;resize:vertical}
  <button class="btn outline" type="button" id="resetBtn">＋ Báo cáo mới</button>
 </div>
 </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
@@ -276,37 +303,70 @@ function statusDraft(message,color){
  el.textContent=message;
  el.style.color=color||'#718078';
 }
+
 async function getPassword(){
- let password=localStorage.getItem(PASSWORD_KEY);
- if(!password) password=prompt('Nhập mã truy cập báo cáo trại gà:');
- if(!password) throw new Error('Chưa nhập mã truy cập.');
- const res=await fetch(WORKER_URL+'/api/login',{
-  method:'POST',
-  headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({password})
- });
- let result;
- try{result=await res.json();}
- catch(e){throw new Error('Không đọc được phản hồi từ Worker.');}
- if(!res.ok||!result.ok){
-  localStorage.removeItem(PASSWORD_KEY);
-  throw new Error(result.error||'Mã truy cập không đúng.');
- }
- localStorage.setItem(PASSWORD_KEY,password);
+ const password=localStorage.getItem(PASSWORD_KEY);
+ if(!password) throw new Error('Vui lòng đăng nhập lại.');
+
  return password;
 }
-async function api(path,options={}){
- const password=await getPassword();
- const headers={...(options.headers||{}),'X-App-Password':password};
- if(options.body) headers['Content-Type']='application/json';
- const res=await fetch(WORKER_URL+path,{...options,headers});
- let result;
- try{result=await res.json();}
- catch(e){throw new Error('Worker trả về dữ liệu không hợp lệ.');}
- if(res.status===401) localStorage.removeItem(PASSWORD_KEY);
- if(!res.ok||!result.ok) throw new Error(result.error||'Không thể thực hiện yêu cầu.');
- return result;
+
+async function validateLogin(password){
+ const error=$('#loginError');
+ const btn=$('#loginBtn');
+
+ error.textContent='';
+
+ if(!password){
+  error.textContent='Vui lòng nhập mã truy cập.';
+  return;
+ }
+
+ btn.disabled=true;
+ btn.textContent='ĐANG KIỂM TRA…';
+
+ try{
+  const res=await fetch(WORKER_URL+'/api/login',{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({password})
+  });
+
+  const result=await res.json();
+
+  if(!res.ok||!result.ok){
+   localStorage.removeItem(PASSWORD_KEY);
+   error.textContent='Mã truy cập không đúng. Vui lòng thử lại.';
+   $('#loginPassword').value='';
+   $('#loginPassword').focus();
+   return;
+  }
+
+  localStorage.setItem(PASSWORD_KEY,password);
+
+  $('#loginScreen').style.display='none';
+  $('#mainApp').style.display='block';
+
+  calc();
+  restoreDraft(today(),false);
+  await loadHistory();
+
+ }catch(e){
+  error.textContent='Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
+ }finally{
+  btn.disabled=false;
+  btn.textContent='VÀO ỨNG DỤNG　→';
+ }
 }
+
+$('#loginBtn').addEventListener('click',()=>{
+ validateLogin($('#loginPassword').value.trim());
+});
+
+$('#loginPassword').addEventListener('keydown',e=>{
+ if(e.key==='Enter') validateLogin($('#loginPassword').value.trim());
+});
+
 function calc(){
  const hens=val('hensStart');
  const flock=hens+val('roostersStart')-val('hensDead')-val('roostersDead')-val('hensCull')-val('roostersCull')+val('flockIn')-val('flockOut');
@@ -622,16 +682,27 @@ $('#photos').addEventListener('change',e=>{
  scheduleDraftSave();
 });
 $('#refreshBtn').addEventListener('click',loadHistory);
+
 $('#logoutBtn').addEventListener('click',()=>{
  localStorage.removeItem(PASSWORD_KEY);
- alert('Đã xóa mã truy cập đã lưu. Lần tiếp theo sẽ yêu cầu nhập lại mã.');
- loadHistory();
+ $('#mainApp').style.display='none';
+ $('#loginScreen').style.display='flex';
+ $('#loginPassword').value='';
+ $('#loginError').textContent='';
 });
+
 form.addEventListener('submit',e=>e.preventDefault());
 calc();
-/* MỞ TRANG: KHÔI PHỤC NHÁP HÔM NAY NẾU CÓ */
-restoreDraft(today(),false);
-loadHistory();
+/* CHỈ HIỆN ỨNG DỤNG SAU KHI MÃ ĐƯỢC XÁC THỰC */
+$('#mainApp').style.display='none';
+
+const savedPassword=localStorage.getItem(PASSWORD_KEY);
+
+if(savedPassword){
+ validateLogin(savedPassword);
+}else{
+ $('#loginScreen').style.display='flex';
+}
 })();
 </script>
 </body>
