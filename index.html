@@ -624,15 +624,34 @@ setText('rFlock',fmt(flock)+' con');
 }
 
 /* LẤY VÀ KHÔI PHỤC DỮ LIỆU */
+
 function getData(){
  const data={};
+
  fields.forEach(el=>{
   data[el.name]=el.type==='checkbox'?el.checked:el.value;
  });
- data.workers=workers.map(w=>({name:w.name||'',status:w.status||'Có mặt'}));
+
+ data.workers=workers.map(w=>({
+  name:w.name||'',
+  status:w.status||'Có mặt'
+ }));
+
  data.calculated=calc();
- data.photos=photos.map(p=>({name:p.name,type:p.type}));
+
+ // Lưu riêng tồn trứng cuối ngày để ngày sau đọc lại.
+ data.eggStockEnd=Math.max(
+  0,
+  Number(data.calculated.eggStock)||0
+ );
+
+ data.photos=photos.map(p=>({
+  name:p.name,
+  type:p.type
+ }));
+
  data.savedAt=new Date().toISOString();
+
  return data;
 }
 
@@ -721,105 +740,125 @@ function getSavedData(date){
  return null;
 }
 
+
 function getPreviousReportData(date){
- const checkDate = previousDate(String(date || '').slice(0,10));
- const report = (Array.isArray(reports) ? reports : []).find(
-  r => String(r.date || '').slice(0,10) === checkDate
- );
- if(report && report.data){
-  const data = parseReportData(report.data);
-  if(data) return data;
+ const target=String(date||'').slice(0,10);
+
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(target)){
+  return null;
  }
+
+ const checkDate=previousDate(target);
+
+ // Ưu tiên báo cáo đã lưu trên D1.
+ const report=reports.find(
+  r=>String(r.date||'').slice(0,10)===checkDate
+ );
+
+ if(report&&report.data){
+  const data=parseReportData(report.data);
+
+  if(data){
+   // Gắn ngày của bản ghi để xác định đúng ngày nguồn.
+   return {...data,date:checkDate};
+  }
+ }
+
+ // Không có báo cáo D1 thì kiểm tra nháp đúng ngày liền trước.
  try{
-  const raw = localStorage.getItem(DRAFT_PREFIX + checkDate);
-  const data = parseReportData(raw);
-  if(data) return data;
+  const raw=localStorage.getItem(DRAFT_PREFIX+checkDate);
+  const data=parseReportData(raw);
+
+  if(data){
+   return {...data,date:checkDate};
+  }
  }catch(e){}
+
  return null;
 }
+
 function previousDate(date){
  const d=new Date(date+'T12:00:00');
  d.setDate(d.getDate()-1);
  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
+
 function getEggStockEnd(data){
- data = parseReportData(data);
+ data=parseReportData(data);
  if(!data) return 0;
- // Ưu tiên lấy tồn cuối đã lưu
- if(data.eggStockEnd !== undefined &&
-    data.eggStockEnd !== null &&
-    data.eggStockEnd !== ''){
-  return Math.max(0, Number(data.eggStockEnd) || 0);
- }
- if(data.calculated &&
-    data.calculated.eggStock !== undefined &&
-    data.calculated.eggStock !== null){
-  return Math.max(0, Number(data.calculated.eggStock) || 0);
- }
- if(data.eggStock !== undefined &&
-    data.eggStock !== null &&
-    data.eggStock !== ''){
-  return Math.max(0, Number(data.eggStock) || 0);
- }
- // Nếu chưa có tồn cuối lưu sẵn thì tính từ số liệu
+
  return Math.max(
   0,
-  Number(data.eggStockStart || 0) +
-  Number(data.egg1 || 0) +
-  Number(data.egg2 || 0) +
-  Number(data.egg3 || 0) +
-  Number(data.eggOther || 0) -
-  Number(data.eggHandover || 0)
+  Number(data.eggStockStart||0)
+  +Number(data.egg1||0)
+  +Number(data.egg2||0)
+  +Number(data.egg3||0)
+  +Number(data.eggOther||0)
+  -Number(data.eggHandover||0)
  );
 }
+
+
 function getEggStockBeforeDate(date){
- const target = String(date || '').slice(0,10);
+ const target=String(date||'').slice(0,10);
  if(!/^\d{4}-\d{2}-\d{2}$/.test(target)) return null;
- const list = (Array.isArray(reports) ? reports : [])
-  .map(r => ({
-   date: String(r.date || '').slice(0,10),
-   data: parseReportData(r.data)
+
+ const list=(Array.isArray(reports)?reports:[])
+  .map(r=>({
+   date:String(r.date||'').slice(0,10),
+   data:parseReportData(r.data)
   }))
-  .filter(r =>
+  .filter(r=>
    r.data &&
    /^\d{4}-\d{2}-\d{2}$/.test(r.date) &&
-   r.date < target
+   r.date<target
   )
-  .sort((a,b) => a.date.localeCompare(b.date));
- if(!list.length){
-  const prev = getPreviousReportData(target);
-  return prev ? getEggStockEnd(prev) : null;
- }
- let stock = Number(list[0].data.eggStockStart || 0);
+  .sort((a,b)=>a.date.localeCompare(b.date));
+
+ if(!list.length) return null;
+
+ // Khởi tạo bằng tồn đầu của báo cáo cũ nhất.
+ let stock=Math.max(0,Number(list[0].data.eggStockStart||0));
+
  for(const item of list){
-  const d = item.data;
-  stock = Math.max(
+  const d=item.data;
+
+  // Tồn cuối ngày = tồn đầu + trứng nhặt - bàn giao kho.
+  stock=Math.max(
    0,
-   stock +
-   Number(d.egg1 || 0) +
-   Number(d.egg2 || 0) +
-   Number(d.egg3 || 0) +
-   Number(d.eggOther || 0) -
-   Number(d.eggHandover || 0)
+   stock
+   +Number(d.egg1||0)
+   +Number(d.egg2||0)
+   +Number(d.egg3||0)
+   +Number(d.eggOther||0)
+   -Number(d.eggHandover||0)
   );
  }
+
  return stock;
 }
+
+
 function restoreDraft(date,resetWhenMissing){
  if(!date) return false;
+
  clearTimeout(draftTimer);
  restoringDraft=true;
+
  try{
   const saved=getSavedData(date);
   const prev=getPreviousReportData(date);
-  const eggStockBefore=getEggStockBeforeDate(date);
-  const isServerReport=reports.some(
+  const previousEggStock=getEggStockBeforeDate(date);
+
+  const isServerReport=(reports||[]).some(
    r=>String(r.date||'').slice(0,10)===date&&r.data
   );
+
   if(saved){
    setData(saved);
    $('#date').value=date;
+
    if(prev&&!isServerReport){
     form.elements.hensStart.value=Math.max(
      0,
@@ -827,18 +866,21 @@ function restoreDraft(date,resetWhenMissing){
      -Number(prev.hensDead||0)
      -Number(prev.hensCull||0)
     );
+
     form.elements.roostersStart.value=Math.max(
      0,
      Number(prev.roostersStart||0)
      -Number(prev.roostersDead||0)
      -Number(prev.roostersCull||0)
     );
+
     form.elements.feedStart.value=Math.max(
      0,
      Number(prev.feedStart||0)
      +Number(prev.feedIn||0)
      -Number(prev.feedUsed||0)
     );
+
     form.elements.feed2Start.value=Math.max(
      0,
      Number(prev.feed2Start||0)
@@ -846,46 +888,54 @@ function restoreDraft(date,resetWhenMissing){
      -Number(prev.feed2Used||0)
     );
    }
-   // Cập nhật tồn đầu ngày cho nháp, không sửa báo cáo lịch sử trên D1
-   if(!isServerReport&&eggStockBefore!==null){
-    form.elements.eggStockStart.value=eggStockBefore;
+
+   if(previousEggStock!==null){
+    form.elements.eggStockStart.value=previousEggStock;
    }
+
    calc();
-   if(!isServerReport){
-    saveLocalDraft();
-   }
+
+   if(!isServerReport) saveLocalDraft();
+
    statusDraft(
-    '✓ Đã khôi phục dữ liệu ngày '+
-    date.split('-').reverse().join('/')+
-    '.',
-    '#146c43'
+    previousEggStock!==null
+     ?'✓ Tồn đầu ngày đã lấy từ tồn cuối dự kiến của các ngày trước.'
+     :'Chưa có báo cáo trước để tính tồn trứng.',
+    previousEggStock!==null?'#146c43':'#718078'
    );
+
    return true;
   }
+
   if(!resetWhenMissing){
-   statusDraft(
-    'Chưa có nháp ngày này. Nhập liệu sẽ tự lưu trên thiết bị.'
-   );
+   statusDraft('Chưa có nháp ngày này. Nhập liệu sẽ tự lưu trên thiết bị.');
    return false;
   }
+
   form.reset();
   $('#date').value=date;
+
   workers=[
    {name:'Đoàn Xuân Thanh',status:'Có mặt'},
    {name:'Đoàn Thị Hồi',status:'Có mặt'}
   ];
+
   renderWorkers();
+
   form.elements.manager.value='Đoàn Xuân Thanh';
   photos=[];
   $('#photos').value='';
   $('#photoList').innerHTML='';
+
   form.elements.hensStart.value=9600;
   form.elements.roostersStart.value=405;
   form.elements.feedStart.value=0;
   form.elements.feed2Start.value=0;
-  // Tồn trứng đầu ngày = tồn cuối ngày trước
+
+  // Lấy tồn cuối dự kiến trước ngày đang chọn làm tồn đầu.
   form.elements.eggStockStart.value=
-   eggStockBefore!==null ? eggStockBefore : 0;
+   previousEggStock!==null?previousEggStock:0;
+
   if(prev){
    form.elements.hensStart.value=Math.max(
     0,
@@ -893,43 +943,46 @@ function restoreDraft(date,resetWhenMissing){
     -Number(prev.hensDead||0)
     -Number(prev.hensCull||0)
    );
+
    form.elements.roostersStart.value=Math.max(
     0,
     Number(prev.roostersStart||0)
     -Number(prev.roostersDead||0)
     -Number(prev.roostersCull||0)
    );
+
    form.elements.feedStart.value=Math.max(
     0,
     Number(prev.feedStart||0)
     +Number(prev.feedIn||0)
     -Number(prev.feedUsed||0)
    );
+
    form.elements.feed2Start.value=Math.max(
     0,
     Number(prev.feed2Start||0)
     +Number(prev.feed2In||0)
     -Number(prev.feed2Used||0)
    );
-   statusDraft(
-    '✓ Đã lấy số gà, tồn cám và tồn trứng từ ngày trước.',
-    '#146c43'
-   );
-  }else{
-   statusDraft(
-    eggStockBefore!==null
-     ?'✓ Đã lấy tồn trứng từ báo cáo trước.'
-     :'Chưa tìm thấy báo cáo trước để lấy tồn trứng.',
-    eggStockBefore!==null?'#146c43':'#718078'
-   );
   }
+
   calc();
   saveLocalDraft();
+
+  statusDraft(
+   previousEggStock!==null
+    ?'✓ Đã tính tồn đầu từ tồn trứng tích lũy của các báo cáo trước.'
+    :'Chưa có báo cáo trước để tính tồn trứng.',
+   previousEggStock!==null?'#146c43':'#718078'
+  );
+
   return true;
+
  }catch(e){
   console.error('restoreDraft error:',e);
   statusDraft('Lỗi khôi phục dữ liệu: '+e.message,'#dc3545');
   return false;
+
  }finally{
   restoringDraft=false;
  }
