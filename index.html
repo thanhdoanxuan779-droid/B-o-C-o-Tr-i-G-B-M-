@@ -199,6 +199,8 @@ pointer-events: none !important;
 -webkit-user-select: none !important;
 user-select: none !important;
 }
+
+
 </style>
 </head>
 <body>
@@ -243,7 +245,7 @@ user-select: none !important;
  <form id="reportForm">
  <section class="card">
   <div class="card-head"><div class="num">0</div><div><h2>Thông tin báo cáo</h2><p>Ngày ghi nhận và người phụ trách</p></div></div>
-  <div class="card-body grid">
+  <div class="card-body grid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:12px;row-gap:12px;width:100%;box-sizing:border-box">
    <div class="field"><label>Ngày báo cáo</label><input id="date" name="date" type="date" required></div>
    <div class="field"><label>Trưởng trại</label><input name="manager" value="Đoàn Xuân Thanh" placeholder="Họ và tên"></div>
    <div class="field full"><label>Ca báo cáo</label><select name="shift"><option>Cả ngày</option><option>Ca sáng</option><option>Ca chiều</option><option>Ca đêm</option></select></div>
@@ -1369,7 +1371,8 @@ await api('/api/reports',{
 
 
 
-/* XUẤT PDF DÀI LIỀN MẠCH - CHỤP TỪNG PHẦN ĐỂ GIẢM BỘ NHỚ */
+
+/* XUẤT PDF DÀI LIỀN MẠCH - GIẢM TẢI CHO IPHONE */
 async function exportPDF(){
  if(busy) return;
 
@@ -1393,12 +1396,12 @@ async function exportPDF(){
   clone=source.cloneNode(true);
 
   Object.assign(clone.style,{
-   position:'fixed',
-   left:'-2000px',
+   position:'absolute',
+   left:'0',
    top:'0',
-   width:'760px',
-   minWidth:'760px',
-   maxWidth:'760px',
+   width:'700px',
+   minWidth:'700px',
+   maxWidth:'700px',
    height:'auto',
    maxHeight:'none',
    overflow:'visible',
@@ -1406,7 +1409,9 @@ async function exportPDF(){
    padding:'12px',
    background:'#fff',
    boxSizing:'border-box',
-   transform:'none'
+   transform:'none',
+   zIndex:'-1',
+   pointerEvents:'none'
   });
 
   const oldFields=source.querySelectorAll('input,select,textarea');
@@ -1447,15 +1452,31 @@ async function exportPDF(){
    el.style.boxSizing='border-box';
   });
 
+  // Giảm kích thước ảnh để tránh quá tải bộ nhớ trên điện thoại.
+  clone.querySelectorAll('img').forEach(img=>{
+   img.style.maxWidth='100%';
+   img.style.height=img.style.height||'auto';
+  });
+
   document.body.appendChild(clone);
+
+  // Chờ ảnh tải xong trước khi chụp.
+  const images=Array.from(clone.querySelectorAll('img'));
+
+  await Promise.all(images.map(img=>{
+   if(img.complete && img.naturalWidth>0) return Promise.resolve();
+
+   return new Promise(resolve=>{
+    const done=()=>resolve();
+    img.addEventListener('load',done,{once:true});
+    img.addEventListener('error',done,{once:true});
+    setTimeout(done,8000);
+   });
+  }));
 
   const formCopy=clone.querySelector('#reportForm');
   if(!formCopy) throw new Error('Không tìm thấy biểu mẫu báo cáo.');
 
-  /*
-   * Chụp từng thẻ riêng thay vì chụp cả trang thành một canvas khổng lồ.
-   * PDF vẫn là một trang dài duy nhất.
-   */
   const sections=[
    clone.querySelector('.summary'),
    clone.querySelector('#draftStatus'),
@@ -1476,40 +1497,39 @@ async function exportPDF(){
 
    const section=sections[i];
 
-   const canvas=await Promise.race([
-    html2canvas(section,{
-     scale:1,
-     useCORS:true,
-     allowTaint:false,
-     backgroundColor:'#ffffff',
-     logging:false,
-     scrollX:0,
-     scrollY:0,
-     windowWidth:800
-    }),
-    new Promise((_,reject)=>setTimeout(
-     ()=>reject(new Error('Xử lý phần '+(i+1)+' quá lâu. Hãy giảm số ảnh rồi thử lại.')),
-     30000
-    ))
-   ]);
+   // Đợi chụp thật sự hoàn tất, không dùng bộ đếm 30 giây gây lỗi giả.
+   const canvas=await html2canvas(section,{
+    scale:0.65,
+    useCORS:true,
+    allowTaint:false,
+    backgroundColor:'#ffffff',
+    logging:false,
+    scrollX:0,
+    scrollY:0,
+    windowWidth:720,
+    imageTimeout:10000,
+    removeContainer:true
+   });
 
    if(!canvas.width||!canvas.height){
     throw new Error('Không chụp được phần '+(i+1)+' của báo cáo.');
    }
 
-   const image=canvas.toDataURL('image/jpeg',0.72);
+   const image=canvas.toDataURL('image/jpeg',0.65);
    const height=canvas.height*contentWidth/canvas.width;
 
    rendered.push({image,height});
    totalHeight+=height+gap;
 
-   // Giải phóng canvas ngay sau khi chuyển thành ảnh JPEG.
    canvas.width=1;
    canvas.height=1;
 
    if(totalHeight>14000){
     throw new Error('Báo cáo quá dài để xuất thành một trang PDF. Hãy giảm số ảnh minh chứng.');
    }
+
+   // Cho điện thoại nghỉ ngắn giữa các phần.
+   await new Promise(resolve=>setTimeout(resolve,50));
   }
 
   btn.textContent='Đang ghép file PDF…';
@@ -1550,7 +1570,7 @@ async function exportPDF(){
 
  }catch(e){
   console.error('PDF export error:',e);
-  alert('Không xuất được PDF: '+e.message);
+  alert('Không xuất được PDF: '+(e.message||'Lỗi xử lý báo cáo.'));
  }finally{
   if(clone) clone.remove();
   busy=false;
