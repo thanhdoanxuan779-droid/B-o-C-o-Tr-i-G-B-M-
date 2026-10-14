@@ -1715,11 +1715,30 @@ async function exportPDF() {
         requestAnimationFrame(resolve)
       )
     );
-    const pxWidth = Math.ceil(Math.max(clone.scrollWidth, width));
-    const pxHeight = Math.ceil(Math.max(
-      clone.scrollHeight,
-      clone.getBoundingClientRect().height
-    ));
+    clone.style.setProperty('display', 'block', 'important');
+clone.style.setProperty('position', 'relative', 'important');
+clone.style.setProperty('overflow', 'visible', 'important');
+clone.style.setProperty('height', 'auto', 'important');
+clone.style.setProperty('max-height', 'none', 'important');
+clone.querySelectorAll('*').forEach(el => {
+  el.style.setProperty('max-height', 'none', 'important');
+});
+await new Promise(resolve =>
+  requestAnimationFrame(() =>
+    requestAnimationFrame(resolve)
+  )
+);
+const rect = clone.getBoundingClientRect();
+const pxWidth = Math.ceil(Math.max(
+  clone.scrollWidth,
+  rect.width,
+  width
+));
+const pxHeight = Math.ceil(Math.max(
+  clone.scrollHeight,
+  rect.height,
+  clone.offsetHeight
+));
     if (!pxWidth || !pxHeight) {
       throw new Error('Không tìm thấy nội dung để xuất PDF.');
     }
