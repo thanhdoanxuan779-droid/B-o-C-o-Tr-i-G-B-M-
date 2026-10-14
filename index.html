@@ -1248,9 +1248,8 @@ async function save(){
  }
 }
 
-/* XUẤT PDF */
 
-/* XUẤT PDF A4 VỪA MÀN HÌNH */
+/* XUẤT PDF LIỀN MẠCH - TỰ CO VỪA CHIỀU NGANG */
 async function exportPDF(){
  if(busy) return;
 
@@ -1270,6 +1269,7 @@ async function exportPDF(){
   const source=document.querySelector('.content');
   if(!source) throw new Error('Không tìm thấy nội dung báo cáo.');
 
+  // Tạo bản sao riêng để xuất PDF
   clone=source.cloneNode(true);
 
   Object.assign(clone.style,{
@@ -1277,17 +1277,19 @@ async function exportPDF(){
    left:'-10000px',
    top:'0',
    width:'760px',
+   minWidth:'760px',
    maxWidth:'none',
    height:'auto',
    maxHeight:'none',
    overflow:'visible',
-   padding:'12px',
    margin:'0',
+   padding:'12px',
    background:'#ffffff',
-   boxSizing:'border-box'
+   boxSizing:'border-box',
+   transform:'none'
   });
 
-  // Giữ nguyên giá trị đã nhập
+  // Đồng bộ dữ liệu đang hiển thị trong app
   const oldFields=source.querySelectorAll('input,select,textarea');
   const newFields=clone.querySelectorAll('input,select,textarea');
 
@@ -1297,16 +1299,29 @@ async function exportPDF(){
 
    if(el.type==='checkbox'||el.type==='radio'){
     cp.checked=el.checked;
+    if(el.checked) cp.setAttribute('checked','checked');
+    else cp.removeAttribute('checked');
+   }else if(el.tagName==='SELECT'){
+    cp.value=el.value;
+    Array.from(cp.options).forEach(option=>{
+     option.selected=option.value===el.value;
+    });
    }else{
     cp.value=el.value;
+    cp.setAttribute('value',el.value);
+   }
+
+   if(el.tagName==='TEXTAREA'){
+    cp.textContent=el.value;
    }
   });
 
-  // Bỏ các nút và phần không cần xuất
+  // Bỏ nút bấm và thành phần không cần đưa vào báo cáo
   clone.querySelectorAll(
    '.no-print,.actions,#history,#draftStatus,.footer'
   ).forEach(el=>el.remove());
 
+  // Giữ màu nền, chữ và kích thước khi xuất
   clone.querySelectorAll('input,select,textarea').forEach(el=>{
    el.style.color='#20312a';
    el.style.backgroundColor='#ffffff';
@@ -1317,8 +1332,9 @@ async function exportPDF(){
 
   document.body.appendChild(clone);
 
+  // Chụp toàn bộ nội dung từ trên xuống dưới
   const canvas=await html2canvas(clone,{
-   scale:1,
+   scale:1.5,
    useCORS:true,
    allowTaint:false,
    backgroundColor:'#ffffff',
@@ -1335,84 +1351,47 @@ async function exportPDF(){
    throw new Error('Không lấy được nội dung báo cáo.');
   }
 
+  // Tạo PDF một trang dài, chiều ngang cố định để tự vừa màn hình
   const {jsPDF}=window.jspdf;
+  const pageWidth=210;
+  const margin=3;
+  const contentWidth=pageWidth-margin*2;
+  const contentHeight=canvas.height*contentWidth/canvas.width;
+  const pageHeight=contentHeight+margin*2;
 
-  // Khổ giấy A4 dọc
+  // jsPDF giới hạn chiều cao trang
+  if(pageHeight>14400){
+   throw new Error(
+    'Báo cáo quá dài để xuất thành một trang PDF duy nhất. Hãy giảm bớt nội dung rồi thử lại.'
+   );
+  }
+
   const pdf=new jsPDF({
    orientation:'portrait',
    unit:'mm',
-   format:'a4',
+   format:[pageWidth,pageHeight],
    compress:true
   });
 
-  const pageWidth=pdf.internal.pageSize.getWidth();
-  const pageHeight=pdf.internal.pageSize.getHeight();
+  pdf.setFillColor(255,255,255);
+  pdf.rect(0,0,pageWidth,pageHeight,'F');
 
-  const margin=6;
-  const contentWidth=pageWidth-margin*2;
-  const contentHeight=pageHeight-margin*2;
-
-  // Số pixel của ảnh tương ứng với chiều cao vùng in A4
-  const pixelsPerPage=Math.floor(
-   canvas.width*contentHeight/contentWidth
+  pdf.addImage(
+   canvas.toDataURL('image/jpeg',0.92),
+   'JPEG',
+   margin,
+   margin,
+   contentWidth,
+   contentHeight,
+   undefined,
+   'FAST'
   );
-
-  if(pixelsPerPage<1){
-   throw new Error('Không xác định được kích thước trang PDF.');
-  }
-
-  let offsetY=0;
-  let pageIndex=0;
-
-  while(offsetY<canvas.height){
-   const sliceHeight=Math.min(
-    pixelsPerPage,
-    canvas.height-offsetY
-   );
-
-   const pageCanvas=document.createElement('canvas');
-   pageCanvas.width=canvas.width;
-   pageCanvas.height=sliceHeight;
-
-   const ctx=pageCanvas.getContext('2d');
-   if(!ctx) throw new Error('Không tạo được ảnh PDF.');
-
-   ctx.fillStyle='#ffffff';
-   ctx.fillRect(0,0,pageCanvas.width,pageCanvas.height);
-
-   ctx.drawImage(
-    canvas,
-    0,offsetY,canvas.width,sliceHeight,
-    0,0,canvas.width,sliceHeight
-   );
-
-   if(pageIndex>0) pdf.addPage('a4','portrait');
-
-   const imageHeight=sliceHeight*contentWidth/canvas.width;
-
-   pdf.addImage(
-    pageCanvas.toDataURL('image/jpeg',0.92),
-    'JPEG',
-    margin,
-    margin,
-    contentWidth,
-    imageHeight,
-    undefined,
-    'FAST'
-   );
-
-   offsetY+=sliceHeight;
-   pageIndex++;
-
-   pageCanvas.width=1;
-   pageCanvas.height=1;
-  }
 
   const date=form.elements.date?.value||today();
   pdf.save('Bao-cao-trai-ga-'+date+'.pdf');
 
  }catch(e){
-  console.error(e);
+  console.error('PDF export error:',e);
   alert('Không xuất được PDF: '+e.message);
  }finally{
   if(clone) clone.remove();
