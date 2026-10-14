@@ -74,8 +74,96 @@ textarea{min-height:76px;resize:vertical}
 .history-item button{border:0;background:#e9f2ec;color:var(--green);border-radius:8px;padding:7px 10px;font-weight:700}
 .empty{color:var(--muted);text-align:center;padding:16px;font-size:12px}
 #photos{font-size:12px}
-.photo-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
-.photo-list img{width:80px;height:80px;object-fit:cover;border-radius:9px}
+.photo-list{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:10px;
+ margin-top:12px
+}
+.photo-item{
+ min-width:0;
+ border:1px solid var(--line);
+ border-radius:12px;
+ padding:8px;
+ background:#fff;
+ overflow:hidden
+}
+.photo-item img{
+ display:block;
+ width:100%;
+ height:140px;
+ object-fit:contain;
+ background:#f3f6f4;
+ border-radius:8px;
+ cursor:pointer
+}
+.photo-name{
+ font-size:11px;
+ overflow-wrap:anywhere;
+ margin:6px 0;
+ color:var(--muted)
+}
+.photo-buttons{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:6px
+}
+.photo-buttons button{
+ border:0;
+ border-radius:8px;
+ padding:9px 4px;
+ font-weight:700;
+ font-size:12px
+}
+.photo-view-btn{background:#e9f2ec;color:#146c43}
+.photo-delete-btn{background:#fff0f0;color:#dc3545}
+.photo-empty{font-size:12px;color:#718078;padding:8px 0}
+.photo-viewer{
+ position:fixed;
+ inset:0;
+ z-index:100000;
+ background:rgba(0,0,0,.92);
+ display:none;
+ align-items:center;
+ justify-content:center;
+ padding:16px
+}
+.photo-viewer.open{display:flex}
+.photo-viewer img{
+ display:block;
+ max-width:100%;
+ max-height:80vh;
+ object-fit:contain
+}
+.photo-viewer-inner{
+ width:100%;
+ max-width:900px;
+ text-align:center
+}
+.photo-viewer-name{
+ color:white;
+ font-size:12px;
+ overflow-wrap:anywhere;
+ margin:10px 0
+}
+.photo-viewer-actions{
+ display:flex;
+ justify-content:center;
+ gap:10px
+}
+.photo-viewer-actions button{
+ border:0;
+ border-radius:10px;
+ padding:11px 18px;
+ font-weight:750
+}
+.photo-close{background:#fff;color:#20312a}
+.photo-delete-current{background:#dc3545;color:white}
+@media print{
+ .photo-buttons,.photo-viewer{display:none!important}
+ .photo-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .photo-item img{height:100px}
+}
 .footer{text-align:center;color:var(--muted);font-size:10px;padding:15px}
 .draft-status{font-size:11px;padding:9px 11px;margin-bottom:12px;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--muted)}
 .worker-card{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:10px;background:#fbfdfb}
@@ -350,6 +438,16 @@ user-select: none !important;
    <label>Ảnh minh chứng (bảng thu trứng / kho trứng / sự cố)</label>
    <input id="photos" type="file" accept="image/*" multiple>
    <div id="photoList" class="photo-list"></div>
+<div id="photoViewer" class="photo-viewer">
+  <div class="photo-viewer-inner">
+    <img id="photoViewerImg" alt="Ảnh minh chứng phóng to">
+    <div id="photoViewerName" class="photo-viewer-name"></div>
+    <div class="photo-viewer-actions">
+      <button type="button" id="photoViewerDelete" class="photo-delete-current">🗑 Xóa ảnh</button>
+      <button type="button" id="photoViewerClose" class="photo-close">✕ Đóng</button>
+    </div>
+  </div>
+</div>
    <p class="note">Ảnh chỉ hiển thị trong phiên hiện tại; chưa được lưu vào nháp hoặc tải lên máy chủ.</p>
    <div class="divider"></div>
    <div class="checkrow">
@@ -768,14 +866,16 @@ function getData(){
   Number(data.calculated.eggStock)||0
  );
 
- data.photos=photos.map(p=>({
+ 
+data.photos=photos.map(p=>({
   name:p.name,
-  type:p.type
- }));
+  type:p.type,
+  url:p.url
+}));
 
- data.savedAt=new Date().toISOString();
+data.savedAt=new Date().toISOString();
 
- return data;
+return data;
 }
 
 function setData(data){
@@ -805,9 +905,16 @@ function setData(data){
  }
 
  renderWorkers();
- photos=[];
- $('#photos').value='';
- $('#photoList').innerHTML='';
+ photos=Array.isArray(data.photos)
+  ?data.photos.filter(p=>
+      p &&
+      typeof p.url==='string' &&
+      p.url.startsWith('data:image/')
+    )
+  :[];
+
+$('#photos').value='';
+renderPhotos();
  calc();
 }
 
@@ -1233,7 +1340,18 @@ async function save(){
   btn.disabled=true;
   btn.textContent='Đang lưu lên D1…';
 
-  await api('/api/reports',{method:'POST',body:JSON.stringify(data)});
+  const serverData={
+  ...data,
+  photos:(data.photos||[]).map(p=>({
+    name:p.name,
+    type:p.type
+  }))
+};
+
+await api('/api/reports',{
+  method:'POST',
+  body:JSON.stringify(serverData)
+});
   saveColdStoreDraft(data.date);
   saveLocalDraft();
   await loadHistory();
@@ -1451,48 +1569,133 @@ $('#exportBtn').addEventListener('click',()=>{
  setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 
-$('#photos').addEventListener('change',e=>{
- photos=Array.from(e.target.files||[]);
+function renderPhotos(){
  const list=$('#photoList');
  list.innerHTML='';
 
- photos.forEach(file=>{
+ if(!photos.length){
+  const empty=document.createElement('div');
+  empty.className='photo-empty';
+  empty.textContent='Chưa có ảnh minh chứng.';
+  list.appendChild(empty);
+  return;
+ }
+
+ photos.forEach((photo,index)=>{
+  const item=document.createElement('div');
+  item.className='photo-item';
+
   const img=document.createElement('img');
-  img.alt=file.name;
-  img.title=file.name;
+  img.src=photo.url;
+  img.alt=photo.name;
+  img.loading='lazy';
+  img.addEventListener('click',()=>viewPhoto(index));
 
-  const reader=new FileReader();
-  reader.onload=ev=>img.src=ev.target.result;
-  reader.readAsDataURL(file);
-  list.append(img);
+  const name=document.createElement('div');
+  name.className='photo-name';
+  name.textContent=photo.name;
+
+  const buttons=document.createElement('div');
+  buttons.className='photo-buttons';
+
+  const view=document.createElement('button');
+  view.type='button';
+  view.className='photo-view-btn';
+  view.textContent='🔍 Xem';
+  view.addEventListener('click',()=>viewPhoto(index));
+
+  const del=document.createElement('button');
+  del.type='button';
+  del.className='photo-delete-btn';
+  del.textContent='🗑 Xóa';
+  del.addEventListener('click',()=>{
+   if(!confirm('Xóa ảnh "'+photo.name+'"?')) return;
+
+   photos.splice(index,1);
+   renderPhotos();
+   scheduleDraftSave();
+  });
+
+  buttons.append(view,del);
+  item.append(img,name,buttons);
+  list.appendChild(item);
  });
+}
 
+function viewPhoto(index){
+ const photo=photos[index];
+ if(!photo) return;
+
+ $('#photoViewerImg').src=photo.url;
+ $('#photoViewerName').textContent=photo.name;
+ $('#photoViewer').classList.add('open');
+ $('#photoViewer').dataset.index=String(index);
+}
+
+function closePhotoViewer(){
+ $('#photoViewer').classList.remove('open');
+ $('#photoViewerImg').removeAttribute('src');
+}
+
+$('#photoViewerClose').addEventListener('click',closePhotoViewer);
+
+$('#photoViewer').addEventListener('click',e=>{
+ if(e.target===$('#photoViewer')) closePhotoViewer();
+});
+
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape') closePhotoViewer();
+});
+
+$('#photoViewerDelete').addEventListener('click',()=>{
+ const index=Number($('#photoViewer').dataset.index);
+ const photo=photos[index];
+ if(!photo) return;
+
+ if(!confirm('Xóa ảnh "'+photo.name+'"?')) return;
+
+ photos.splice(index,1);
+ closePhotoViewer();
+ renderPhotos();
  scheduleDraftSave();
 });
 
-$('#refreshBtn').addEventListener('click',loadHistory);
+$('#photos').addEventListener('change',async e=>{
+ const selected=Array.from(e.target.files||[]);
+ if(!selected.length) return;
 
-$('#logoutBtn').addEventListener('click',()=>{
- localStorage.removeItem(PASSWORD_KEY);
- $('#mainApp').style.display='none';
- $('#loginScreen').style.display='flex';
- $('#loginPassword').value='';
- $('#loginError').textContent='';
+ const input=$('#photos');
+ input.disabled=true;
+
+ try{
+  for(const file of selected){
+   if(!file.type.startsWith('image/')) continue;
+
+   try{
+    const url=await new Promise((resolve,reject)=>{
+     const reader=new FileReader();
+     reader.onload=()=>resolve(reader.result);
+     reader.onerror=()=>reject(new Error('Không đọc được ảnh '+file.name));
+     reader.readAsDataURL(file);
+    });
+
+    photos.push({
+     name:file.name,
+     type:file.type,
+     url
+    });
+   }catch(err){
+    alert(err.message);
+   }
+  }
+
+  renderPhotos();
+  scheduleDraftSave();
+ }finally{
+  input.value='';
+  input.disabled=false;
+ }
 });
-
-form.addEventListener('submit',e=>e.preventDefault());
-
-renderWorkers();
-calc();
-$('#mainApp').style.display='none';
-
-const savedPassword=localStorage.getItem(PASSWORD_KEY);
-
-if(savedPassword){
- validateLogin(savedPassword);
-}else{
- $('#loginScreen').style.display='flex';
-}
 
 })();
 </script>
