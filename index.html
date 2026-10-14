@@ -1617,17 +1617,12 @@ async function exportPDF() {
     btn.textContent = 'Đang chuẩn bị PDF...';
 
     if (!window.html2canvas || !window.jspdf?.jsPDF) {
-      throw new Error('Thiếu thư viện PDF. Hãy tải lại trang.');
+      throw new Error('Thiếu thư viện PDF hoặc html2canvas. Hãy tải lại trang.');
     }
 
-    // Sao chép báo cáo để không làm thay đổi giao diện đang nhập.
     const clone = source.cloneNode(true);
-    const originals = source.querySelectorAll(
-      'input, select, textarea'
-    );
-    const copies = clone.querySelectorAll(
-      'input, select, textarea'
-    );
+    const originals = source.querySelectorAll('input,select,textarea');
+    const copies = clone.querySelectorAll('input,select,textarea');
 
     originals.forEach((el, i) => {
       const cp = copies[i];
@@ -1635,46 +1630,38 @@ async function exportPDF() {
 
       if (el.type === 'file') {
         cp.remove();
-        return;
-      }
-
-      if (el.type === 'checkbox' || el.type === 'radio') {
+      } else if (el.type === 'checkbox' || el.type === 'radio') {
         cp.checked = el.checked;
         cp.toggleAttribute('checked', el.checked);
       } else if (el.tagName === 'SELECT') {
         cp.value = el.value;
-
-        Array.from(cp.options).forEach(option => {
-          option.selected = option.value === el.value;
+        Array.from(cp.options).forEach(o => {
+          o.selected = o.value === el.value;
         });
       } else {
         cp.value = el.value;
         cp.setAttribute('value', el.value);
-
         if (el.tagName === 'TEXTAREA') {
           cp.textContent = el.value;
         }
       }
     });
 
-    // Bỏ các nút thao tác, khu vực lịch sử và nút tải ảnh.
     clone.querySelectorAll(
-      'button, .no-print, .actions, #history, ' +
-      '.photo-viewer, .photo-buttons, input[type="file"]'
+      'button,.no-print,.actions,#history,.photo-viewer,.photo-buttons,input[type="file"]'
     ).forEach(el => el.remove());
 
-    const rectSource = source.getBoundingClientRect();
     const width = Math.ceil(Math.max(
-      rectSource.width,
+      source.getBoundingClientRect().width,
       source.scrollWidth,
       320
     ));
 
     stage = document.createElement('div');
     stage.style.cssText =
-      'position:fixed;left:-30000px;top:0;' +
-      'background:#fff;overflow:visible;' +
-      'height:auto;max-height:none;z-index:-1;';
+      'position:fixed;left:-20000px;top:0;' +
+      'background:#fff;overflow:visible;height:auto;' +
+      'max-height:none;z-index:-1;';
     stage.style.width = width + 'px';
 
     clone.style.setProperty('width', width + 'px', 'important');
@@ -1687,7 +1674,7 @@ async function exportPDF() {
     clone.style.setProperty('position', 'relative', 'important');
     clone.style.setProperty('transform', 'none', 'important');
     clone.style.setProperty('box-shadow', 'none', 'important');
-    clone.style.setProperty('background', '#fff', 'important');
+    clone.style.setProperty('background-color', '#fff', 'important');
 
     clone.querySelectorAll('*').forEach(el => {
       el.style.setProperty('max-height', 'none', 'important');
@@ -1714,13 +1701,13 @@ async function exportPDF() {
     stage.appendChild(clone);
     document.body.appendChild(stage);
 
-    await new Promise(resolve => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(resolve);
-      });
-    });
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(resolve)
+      )
+    );
 
-    // Chờ ảnh tải xong trước khi chụp báo cáo.
+    // Chờ ảnh tải xong.
     for (const img of clone.querySelectorAll('img')) {
       img.removeAttribute('loading');
 
@@ -1736,7 +1723,7 @@ async function exportPDF() {
             resolve();
           };
 
-          timer = setTimeout(finish, 8000);
+          timer = setTimeout(finish, 10000);
           img.addEventListener('load', finish, { once: true });
           img.addEventListener('error', finish, { once: true });
         });
@@ -1749,11 +1736,11 @@ async function exportPDF() {
       }
     }
 
-    await new Promise(resolve => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(resolve);
-      });
-    });
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(resolve)
+      )
+    );
 
     const rect = clone.getBoundingClientRect();
     const pxWidth = Math.ceil(Math.max(
@@ -1769,32 +1756,23 @@ async function exportPDF() {
     ));
 
     if (pxWidth <= 0 || pxHeight <= 0) {
-      throw new Error('Không xác định được kích thước báo cáo.');
+      throw new Error('Không đo được kích thước báo cáo.');
     }
 
-    // Một trang PDF dài, khổ 80 mm để dễ xem trên điện thoại.
+    // Một trang PDF dài, theo đúng tỉ lệ nội dung.
     const pdfWidth = 80;
     const pdfHeight = pdfWidth * pxHeight / pxWidth;
 
-    if (pdfHeight > 5000) {
+    if (pdfHeight > 14400) {
       throw new Error(
-        'Báo cáo quá dài. Hãy giảm kích thước hoặc số lượng ảnh.'
+        'Báo cáo vượt giới hạn chiều cao PDF. Hãy chia báo cáo thành nhiều file.'
       );
     }
 
-    // Giới hạn bộ nhớ để giảm lỗi trên iPhone.
-    const scale = Math.min(
-      1.8,
-      14000 / pxWidth,
-      14000 / pxHeight,
-      Math.sqrt(24000000 / (pxWidth * pxHeight))
-    );
+    // Tăng độ phân giải lên 3 lần.
+    const scale = 3;
 
-    if (!Number.isFinite(scale) || scale <= 0) {
-      throw new Error('Kích thước báo cáo không hợp lệ.');
-    }
-
-    btn.textContent = 'Đang dựng báo cáo...';
+    btn.textContent = 'Đang dựng báo cáo nét cao...';
 
     canvas = await html2canvas(clone, {
       scale,
@@ -1813,7 +1791,7 @@ async function exportPDF() {
       throw new Error('Không tạo được ảnh báo cáo.');
     }
 
-    btn.textContent = 'Đang tạo PDF...';
+    btn.textContent = 'Đang tạo PDF JPEG chất lượng cao...';
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({
@@ -1823,10 +1801,11 @@ async function exportPDF() {
       compress: true
     });
 
-    const imageData = canvas.toDataURL('image/jpeg', 0.92);
+    // JPEG chất lượng 100%, không dùng PNG.
+    const imageData = canvas.toDataURL('image/jpeg', 1.0);
 
     if (!imageData || imageData === 'data:,') {
-      throw new Error('Không chuyển được báo cáo thành ảnh PDF.');
+      throw new Error('Không chuyển được báo cáo thành ảnh JPEG.');
     }
 
     pdf.addImage(
@@ -1840,7 +1819,6 @@ async function exportPDF() {
       'FAST'
     );
 
-    // Giải phóng bộ nhớ ảnh sau khi đã thêm vào PDF.
     canvas.width = 1;
     canvas.height = 1;
     canvas = null;
@@ -1851,7 +1829,7 @@ async function exportPDF() {
     const blob = pdf.output('blob');
 
     if (!blob || !blob.size) {
-      throw new Error('File PDF bị rỗng.');
+      throw new Error('File PDF tạo ra bị rỗng.');
     }
 
     const file = new File([blob], filename, {
@@ -1859,9 +1837,9 @@ async function exportPDF() {
       lastModified: Date.now()
     });
 
-    btn.textContent = 'Đang mở chia sẻ...';
+    btn.textContent = 'Đang mở bảng chia sẻ...';
 
-    // Thử mở bảng chia sẻ của iPhone.
+    // Chia sẻ trực tiếp nếu trình duyệt hỗ trợ.
     if (
       typeof navigator.share === 'function' &&
       typeof navigator.canShare === 'function' &&
@@ -1870,20 +1848,16 @@ async function exportPDF() {
       try {
         await navigator.share({
           files: [file],
-          title: 'Báo cáo trại gà'
+          title: filename
         });
         return;
-      } catch (shareError) {
-        // Người dùng chủ động đóng bảng chia sẻ.
-        if (shareError.name === 'AbortError') {
-          return;
-        }
-
-        console.warn('Không chia sẻ trực tiếp được:', shareError);
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+        console.warn('Chia sẻ PDF thất bại:', e);
       }
     }
 
-    // Dự phòng nếu trình duyệt không hỗ trợ chia sẻ file.
+    // Dự phòng: tải PDF về máy.
     objectUrl = URL.createObjectURL(blob);
 
     const a = document.createElement('a');
@@ -1895,12 +1869,12 @@ async function exportPDF() {
     a.remove();
 
     alert(
-      'PDF đã được tạo. Nếu không thấy bảng chia sẻ, ' +
+      'PDF đã tạo xong. Nếu không thấy bảng chia sẻ, ' +
       'hãy mở app bằng Safari rồi thử lại.'
     );
 
   } catch (error) {
-    console.error('Lỗi xuất PDF:', error);
+    console.error('PDF export error:', error);
     alert('Không tạo được PDF: ' + (error.message || error));
 
   } finally {
@@ -1909,20 +1883,15 @@ async function exportPDF() {
       canvas.height = 1;
     }
 
-    if (stage) {
-      stage.remove();
-    }
+    if (stage) stage.remove();
 
     if (objectUrl) {
       setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
     }
 
     busy = false;
-
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = oldText;
-    }
+    btn.disabled = false;
+    btn.textContent = oldText;
   }
 }
 
