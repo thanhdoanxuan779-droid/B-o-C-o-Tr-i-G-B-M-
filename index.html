@@ -1250,6 +1250,7 @@ async function save(){
 
 /* XUẤT PDF */
 
+/* XUẤT PDF A4 VỪA MÀN HÌNH */
 async function exportPDF(){
  if(busy) return;
 
@@ -1267,6 +1268,7 @@ async function exportPDF(){
   btn.textContent='Đang tạo PDF…';
 
   const source=document.querySelector('.content');
+  if(!source) throw new Error('Không tìm thấy nội dung báo cáo.');
 
   clone=source.cloneNode(true);
 
@@ -1279,13 +1281,13 @@ async function exportPDF(){
    height:'auto',
    maxHeight:'none',
    overflow:'visible',
-   padding:'16px',
+   padding:'12px',
    margin:'0',
    background:'#ffffff',
    boxSizing:'border-box'
   });
 
-  // Giữ nguyên giá trị đang hiển thị trong các ô.
+  // Giữ nguyên giá trị đã nhập
   const oldFields=source.querySelectorAll('input,select,textarea');
   const newFields=clone.querySelectorAll('input,select,textarea');
 
@@ -1300,6 +1302,7 @@ async function exportPDF(){
    }
   });
 
+  // Bỏ các nút và phần không cần xuất
   clone.querySelectorAll(
    '.no-print,.actions,#history,#draftStatus,.footer'
   ).forEach(el=>el.remove());
@@ -1309,19 +1312,21 @@ async function exportPDF(){
    el.style.backgroundColor='#ffffff';
    el.style.boxShadow='none';
    el.style.maxWidth='100%';
+   el.style.boxSizing='border-box';
   });
 
   document.body.appendChild(clone);
 
-  // Chụp toàn bộ báo cáo từ đầu đến cuối.
   const canvas=await html2canvas(clone,{
-   scale:1.5,
+   scale:1,
    useCORS:true,
    allowTaint:false,
    backgroundColor:'#ffffff',
    logging:false,
+   width:clone.scrollWidth,
+   height:clone.scrollHeight,
    windowWidth:800,
-   windowHeight:clone.scrollHeight,
+   windowHeight:Math.max(clone.scrollHeight,800),
    scrollX:0,
    scrollY:0
   });
@@ -1332,40 +1337,76 @@ async function exportPDF(){
 
   const {jsPDF}=window.jspdf;
 
-  // Một trang PDF dài, không chia trang A4.
-  const pageWidth=210;
-  const margin=5;
-  const contentWidth=pageWidth-margin*2;
-  const contentHeight=canvas.height*contentWidth/canvas.width;
-  const pageHeight=contentHeight+margin*2;
-
-  // jsPDF giới hạn chiều dài trang tùy phiên bản.
-  if(pageHeight>14400){
-   throw new Error(
-    'Báo cáo quá dài để tạo một trang PDF duy nhất. Hãy dùng PDF nhiều trang.'
-   );
-  }
-
+  // Khổ giấy A4 dọc
   const pdf=new jsPDF({
    orientation:'portrait',
    unit:'mm',
-   format:[pageWidth,pageHeight],
+   format:'a4',
    compress:true
   });
 
-  pdf.setFillColor(255,255,255);
-  pdf.rect(0,0,pageWidth,pageHeight,'F');
+  const pageWidth=pdf.internal.pageSize.getWidth();
+  const pageHeight=pdf.internal.pageSize.getHeight();
 
-  pdf.addImage(
-   canvas.toDataURL('image/jpeg',0.92),
-   'JPEG',
-   margin,
-   margin,
-   contentWidth,
-   contentHeight,
-   undefined,
-   'FAST'
+  const margin=6;
+  const contentWidth=pageWidth-margin*2;
+  const contentHeight=pageHeight-margin*2;
+
+  // Số pixel của ảnh tương ứng với chiều cao vùng in A4
+  const pixelsPerPage=Math.floor(
+   canvas.width*contentHeight/contentWidth
   );
+
+  if(pixelsPerPage<1){
+   throw new Error('Không xác định được kích thước trang PDF.');
+  }
+
+  let offsetY=0;
+  let pageIndex=0;
+
+  while(offsetY<canvas.height){
+   const sliceHeight=Math.min(
+    pixelsPerPage,
+    canvas.height-offsetY
+   );
+
+   const pageCanvas=document.createElement('canvas');
+   pageCanvas.width=canvas.width;
+   pageCanvas.height=sliceHeight;
+
+   const ctx=pageCanvas.getContext('2d');
+   if(!ctx) throw new Error('Không tạo được ảnh PDF.');
+
+   ctx.fillStyle='#ffffff';
+   ctx.fillRect(0,0,pageCanvas.width,pageCanvas.height);
+
+   ctx.drawImage(
+    canvas,
+    0,offsetY,canvas.width,sliceHeight,
+    0,0,canvas.width,sliceHeight
+   );
+
+   if(pageIndex>0) pdf.addPage('a4','portrait');
+
+   const imageHeight=sliceHeight*contentWidth/canvas.width;
+
+   pdf.addImage(
+    pageCanvas.toDataURL('image/jpeg',0.92),
+    'JPEG',
+    margin,
+    margin,
+    contentWidth,
+    imageHeight,
+    undefined,
+    'FAST'
+   );
+
+   offsetY+=sliceHeight;
+   pageIndex++;
+
+   pageCanvas.width=1;
+   pageCanvas.height=1;
+  }
 
   const date=form.elements.date?.value||today();
   pdf.save('Bao-cao-trai-ga-'+date+'.pdf');
