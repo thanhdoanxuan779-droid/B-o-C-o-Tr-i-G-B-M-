@@ -538,18 +538,19 @@ user-select: none !important;
   </div>
  </section>
  </form>
-
- <section class="card no-print">
-  <div class="card-head"><div class="num">↻</div><div><h2>Báo cáo đã lưu</h2><p>Lịch sử báo cáo chung trên máy chủ</p></div></div>
-  <div class="card-body">
-   <div style="display:flex;gap:8px;margin-bottom:10px">
-    <button type="button" class="btn secondary" id="refreshBtn" style="flex:1">↻ Tải lại</button>
-    <button type="button" class="btn outline" id="logoutBtn" style="flex:1">Đổi mã truy cập</button>
-   </div>
-   <div id="history"><div class="empty">Đang tải báo cáo...</div></div>
+<div class="no-print" style="margin:16px 0">
+  <button type="button" class="btn secondary" id="toggleHistoryBtn" style="width:100%">
+    📋 Xem lịch sử báo cáo
+  </button>
+  <div id="historyPanel" style="display:none;margin-top:10px">
+    <div id="history">
+      <div class="empty">Nhấn nút để tải lịch sử báo cáo.</div>
+    </div>
   </div>
- </section>
- <div class="footer">BÁO CÁO TRẠI GÀ BỐ MẸ · Nháp lưu trên thiết bị; báo cáo hoàn chỉnh lưu trên Cloudflare D1</div>
+</div>
+<div class="footer">
+  BÁO CÁO TRẠI GÀ BỐ MẸ · Nháp lưu trên thiết bị; báo cáo hoàn chỉnh lưu trên Cloudflare D1
+</div>
 </main>
 
 <div class="actions no-print">
@@ -1947,86 +1948,53 @@ function compressPhoto(file) {
     reader.readAsDataURL(file);
   });
 }
-
-/* TỰ MỞ APP NẾU ĐÃ LƯU MẬT KHẨU */
-async function autoLogin(){
+/* TỰ ĐĂNG NHẬP KHI ĐÃ LƯU MẬT KHẨU */
+async function autoLogin() {
   const password = localStorage.getItem(PASSWORD_KEY);
-  if(!password) return;
-
-  try{
+  if (!password) return;
+  const loginScreen = document.getElementById('loginScreen');
+  const mainApp = document.getElementById('mainApp');
+  const btn = document.getElementById('loginBtn');
+  const oldText = btn ? btn.textContent : '';
+  // Hiện màn hình kiểm tra, chưa cho vào app ngay
+  if (loginScreen) loginScreen.style.display = 'block';
+  if (mainApp) mainApp.style.display = 'none';
+  try {
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Đang kiểm tra...';
+    }
     const res = await fetch(WORKER_URL + '/api/login', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({password})
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
     });
-
     const result = await res.json();
-
-    if(!res.ok || !result.ok){
+    if (!res.ok || !result.ok) {
       localStorage.removeItem(PASSWORD_KEY);
+      if (btn) btn.textContent = 'Đăng nhập';
       return;
     }
-
-    $('#loginScreen').style.display = 'none';
-    $('#mainApp').style.display = 'block';
-
+    if (loginScreen) loginScreen.style.display = 'none';
+    if (mainApp) mainApp.style.display = 'block';
     renderWorkers();
     calc();
-
     await loadHistory();
-
     const todayData = getSavedData(today());
     restoreDraft(today(), !todayData);
     restoreColdStoreDraft(today());
     calc();
-
-  }catch(e){
+  } catch (e) {
     console.error('Tự đăng nhập thất bại:', e);
+    // Lỗi mạng thì giữ mật khẩu để có thể thử lại.
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = oldText || 'Đăng nhập';
+    }
   }
 }
-
 autoLogin();
-
-
-$('#photos').addEventListener('change', async e => {
-  const input = e.target;
-  const selected = Array.from(input.files || []);
-
-  if (!selected.length) return;
-
-  input.disabled = true;
-
-  try {
-    const remaining = Math.max(0, 15 - photos.length);
-
-    if (remaining === 0) {
-      alert('Chỉ được thêm tối đa 15 ảnh.');
-      return;
-    }
-
-    const files = selected
-      .filter(file => file.type.startsWith('image/'))
-      .slice(0, remaining);
-
-    if (selected.length > remaining) {
-      alert('Chỉ thêm tối đa 15 ảnh. Đã chọn ' + remaining + ' ảnh đầu tiên.');
-    }
-
-    for (const file of files) {
-      try {
-        const photo = await compressPhoto(file);
-        photos.push(photo);
-        renderPhotos();
-        scheduleDraftSave();
-      } catch (err) {
-        alert(err.message || 'Không xử lý được ảnh ' + file.name);
-      }
-    }
-  } finally {
-    input.value = '';
-    input.disabled = false;
-  }
-});
 /* CHẶN KÉO VƯỢT ĐẦU / CUỐI TRANG */
 (function preventPageBounce() {
   const page = document.documentElement;
@@ -2052,6 +2020,20 @@ $('#photos').addEventListener('change', async e => {
     }
   }, { passive: false });
 })();
+const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+const historyPanel = document.getElementById('historyPanel');
+if (toggleHistoryBtn && historyPanel) {
+  toggleHistoryBtn.addEventListener('click', async () => {
+    const opening = historyPanel.style.display === 'none';
+    historyPanel.style.display = opening ? 'block' : 'none';
+    toggleHistoryBtn.textContent = opening
+      ? 'Ẩn lịch sử báo cáo'
+      : '📋 Xem lịch sử báo cáo';
+    if (opening) {
+      await loadHistory();
+    }
+  });
+}
 })();
 </script>
 </body>
