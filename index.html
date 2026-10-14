@@ -2028,6 +2028,31 @@ function compressPhoto(file) {
     reader.readAsDataURL(file);
   });
 }
+/* CHỌN ẢNH VÀ HIỂN THỊ XEM TRƯỚC TỪNG HÀNG */
+$('#photos').addEventListener('change', async function () {
+  const files = Array.from(this.files || []);
+  if (!files.length) return;
+  const input = this;
+  try {
+    input.disabled = true;
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) continue;
+      try {
+        const photo = await compressPhoto(file);
+        photos.push(photo);
+        // Thêm ảnh vào danh sách ngay sau khi nén xong.
+        renderPhotos();
+        scheduleDraftSave();
+      } catch (error) {
+        console.error('Lỗi xử lý ảnh:', file.name, error);
+        alert('Không xử lý được ảnh "' + file.name + '".');
+      }
+    }
+  } finally {
+    input.disabled = false;
+    input.value = '';
+  }
+});
 /* TỰ ĐĂNG NHẬP - LUÔN KIỂM TRA ÍT NHẤT 1,5 GIÂY */
 async function autoLogin() {
   const password = localStorage.getItem(PASSWORD_KEY);
