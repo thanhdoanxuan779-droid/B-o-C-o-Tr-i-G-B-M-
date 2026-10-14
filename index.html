@@ -1375,7 +1375,7 @@ await api('/api/reports',{
 
 
 
-/* XUAT PDF - CHU SAC NET, GIU ANH MINH CHUNG */
+/* PDF: PHAN CHU LIEN MACH, MOI ANH MOT TRANG */
 async function exportPDF() {
   if (busy) return;
 
@@ -1388,88 +1388,103 @@ async function exportPDF() {
   try {
     busy = true;
     btn.disabled = true;
-    btn.textContent = 'Đang chuẩn bị PDF…';
+    btn.textContent = 'Đang chuẩn bị báo cáo…';
 
     const source = document.querySelector('.content');
-    if (!source) {
-      throw new Error('Không tìm thấy nội dung báo cáo.');
-    }
+    if (!source) throw new Error('Không tìm thấy nội dung báo cáo.');
 
-    // Mở cửa sổ ngay trong thao tác bấm nút để hạn chế bị chặn.
     printWindow = window.open('', '_blank');
-
     if (!printWindow) {
-      throw new Error(
-        'Trình duyệt đã chặn cửa sổ PDF. Hãy cho phép mở cửa sổ bật lên rồi thử lại.'
-      );
+      throw new Error('Hãy cho phép trình duyệt mở cửa sổ bật lên rồi thử lại.');
     }
 
     const clone = source.cloneNode(true);
 
-    // Chép đúng giá trị hiện tại của các ô nhập.
-    const oldFields = source.querySelectorAll(
-      'input, select, textarea'
-    );
-    const newFields = clone.querySelectorAll(
-      'input, select, textarea'
-    );
+    const oldFields = source.querySelectorAll('input,select,textarea');
+    const newFields = clone.querySelectorAll('input,select,textarea');
 
     oldFields.forEach((el, i) => {
       const cp = newFields[i];
       if (!cp) return;
 
       if (el.type === 'file') {
-        cp.replaceWith(
-          printWindow.document.createTextNode('')
-        );
+        cp.remove();
       } else if (el.type === 'checkbox' || el.type === 'radio') {
         cp.checked = el.checked;
         if (el.checked) cp.setAttribute('checked', 'checked');
         else cp.removeAttribute('checked');
       } else if (el.tagName === 'SELECT') {
         cp.value = el.value;
-        Array.from(cp.options).forEach(option => {
-          option.selected = option.value === el.value;
+        Array.from(cp.options).forEach(o => {
+          o.selected = o.value === el.value;
         });
       } else {
         cp.value = el.value;
         cp.setAttribute('value', el.value);
-
-        if (el.tagName === 'TEXTAREA') {
-          cp.textContent = el.value;
-        }
+        if (el.tagName === 'TEXTAREA') cp.textContent = el.value;
       }
     });
 
-    // Bỏ nút thao tác, lịch sử và thành phần không thuộc báo cáo.
     clone.querySelectorAll(
-      '.no-print, .actions, #history, .footer, ' +
-      '.photo-viewer, .photo-buttons, input[type="file"]'
+      '.no-print,.actions,#history,.footer,.photo-viewer,.photo-buttons'
     ).forEach(el => el.remove());
 
-    // Giữ ảnh minh chứng, không ép ảnh thành ảnh thu nhỏ.
-    clone.querySelectorAll('img').forEach(img => {
-      img.removeAttribute('loading');
-      img.style.maxWidth = '100%';
-      img.style.maxHeight = 'none';
-      img.style.objectFit = 'contain';
-      img.style.breakInside = 'avoid';
-      img.style.pageBreakInside = 'avoid';
+    // Tách các ảnh minh chứng khỏi phần chữ.
+    const photoSelectors = [
+      '.photo-item img',
+      '.photo-card img',
+      '.photo-box img',
+      '#photos img',
+      '.photos img',
+      '[data-photo] img'
+    ];
+
+    const photoImages = Array.from(
+      new Set(
+        photoSelectors.flatMap(selector =>
+          Array.from(clone.querySelectorAll(selector))
+        )
+      )
+    );
+
+    const photoPages = photoImages.map(img => {
+      const page = printWindow.document.createElement('div');
+      page.className = 'photo-print-page';
+
+      const image = img.cloneNode(true);
+      image.removeAttribute('loading');
+
+      page.appendChild(image);
+
+      const caption = img.alt || img.getAttribute('data-caption') || '';
+      if (caption) {
+        const text = printWindow.document.createElement('div');
+        text.className = 'photo-caption';
+        text.textContent = caption;
+        page.appendChild(text);
+      }
+
+      // Thay ảnh trong phần chữ bằng chú thích, tránh chen ảnh vào báo cáo.
+      const originalParent = img.closest(
+        '.photo-item,.photo-card,.photo-box'
+      ) || img.parentElement;
+
+      if (originalParent) {
+        const note = printWindow.document.createElement('p');
+        note.className = 'photo-reference';
+        note.textContent = 'Ảnh minh chứng xem ở trang riêng.';
+        originalParent.replaceWith(note);
+      }
+
+      return page;
     });
 
-    // Lấy toàn bộ CSS đang dùng trong app.
-    const styles = Array.from(
-      document.querySelectorAll('style')
-    ).map(el => el.outerHTML).join('\n');
+    // Loại bỏ CSS ngoài có thể gây co trang, giữ CSS app.
+    const styles = Array.from(document.querySelectorAll('style'))
+      .map(s => s.outerHTML).join('\n');
 
-    const links = Array.from(
-      document.querySelectorAll('link[rel="stylesheet"]')
-    ).map(el => el.outerHTML).join('\n');
-
-    const dateInput = $('#date');
-    const date = dateInput && dateInput.value
-      ? dateInput.value
-      : (typeof today === 'function' ? today() : '');
+    const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .map(s => s.outerHTML).join('\n');
 
     printWindow.document.open();
     printWindow.document.write(`<!DOCTYPE html>
@@ -1477,28 +1492,24 @@ async function exportPDF() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Báo cáo trại gà ${date}</title>
+<title>Báo cáo trại gà</title>
 ${links}
 ${styles}
 <style>
-@page {
-  size: A4 portrait;
-  margin: 10mm;
-}
+@page { size: A4 portrait; margin: 9mm; }
+* { box-sizing: border-box !important; }
 html, body {
   background: #fff !important;
   color: #111 !important;
   margin: 0 !important;
   padding: 0 !important;
-  width: 100% !important;
+  width: auto !important;
   height: auto !important;
   overflow: visible !important;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
-* {
-  box-sizing: border-box;
-}
+#printRoot { width: 100%; }
 .content {
   width: 100% !important;
   max-width: none !important;
@@ -1508,90 +1519,103 @@ html, body {
   overflow: visible !important;
   margin: 0 !important;
   padding: 0 !important;
-  transform: none !important;
   box-shadow: none !important;
+  transform: none !important;
 }
 input, select, textarea {
   color: #111 !important;
   background: #fff !important;
   opacity: 1 !important;
   -webkit-text-fill-color: #111 !important;
-  font: inherit;
   max-width: 100% !important;
 }
-textarea {
-  white-space: pre-wrap !important;
-  overflow: visible !important;
-}
-img {
-  max-width: 100% !important;
-  height: auto;
-  object-fit: contain;
-}
-.photo-item, .photo-card, .photo-box {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-table, tr, .field, .grid, .card {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
+textarea { white-space: pre-wrap !important; }
 button, .no-print, .actions, #history, .footer,
-.photo-viewer, .photo-buttons {
-  display: none !important;
+.photo-viewer, .photo-buttons { display: none !important; }
+
+/* Phần chữ được phép chảy tự nhiên qua các trang. */
+.card, .card-body, .grid, .field, form, #reportForm, .summary {
+  overflow: visible !important;
+  max-height: none !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+.photo-reference { font-size: 10pt; color: #555; }
+
+/* Mỗi ảnh minh chứng một trang riêng, phóng lớn tối đa. */
+.photo-print-page {
+  break-before: page;
+  page-break-before: always;
+  break-after: page;
+  page-break-after: always;
+  width: 100%;
+  height: 275mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+.photo-print-page img {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 245mm !important;
+  object-fit: contain !important;
+}
+.photo-caption {
+  margin-top: 8mm;
+  text-align: center;
+  font-size: 12pt;
+  color: #222;
 }
 @media print {
   html, body { overflow: visible !important; }
 }
 </style>
 </head>
-<body>
-<div id="printRoot"></div>
-</body>
+<body><div id="printRoot"></div></body>
 </html>`);
     printWindow.document.close();
 
-    printWindow.document
-      .getElementById('printRoot')
-      .appendChild(
-        printWindow.document.importNode(clone, true)
-      );
+    const root = printWindow.document.getElementById('printRoot');
+    root.appendChild(printWindow.document.importNode(clone, true));
 
-    // Chờ ảnh tải xong trước khi mở hộp thoại in.
-    const images = Array.from(
-      printWindow.document.querySelectorAll('#printRoot img')
-    );
+    // Ảnh minh chứng thành các trang riêng ở cuối PDF.
+    photoPages.forEach(page => root.appendChild(page));
 
-    await Promise.all(images.map(img => {
-      if (img.complete) return Promise.resolve();
+    const imgs = Array.from(root.querySelectorAll('img'));
+    await Promise.all(imgs.map(async img => {
+      img.removeAttribute('loading');
 
-      return new Promise(resolve => {
-        img.addEventListener('load', resolve, { once: true });
-        img.addEventListener('error', resolve, { once: true });
-        setTimeout(resolve, 5000);
-      });
+      if (!img.complete) {
+        await new Promise(resolve => {
+          img.addEventListener('load', resolve, { once: true });
+          img.addEventListener('error', resolve, { once: true });
+          setTimeout(resolve, 10000);
+        });
+      }
+
+      if (img.decode) {
+        try { await img.decode(); } catch (_) {}
+      }
     }));
 
-    btn.textContent = 'Đang mở bản PDF…';
-
+    btn.textContent = 'Đang mở bản in PDF…';
     printWindow.focus();
 
     setTimeout(() => {
       try {
         printWindow.print();
-      } catch (e) {
-        console.error('Print error:', e);
-        alert('Không mở được hộp thoại in PDF.');
+      } catch (err) {
+        alert('Không mở được chức năng in PDF.');
       }
     }, 500);
 
   } catch (e) {
     console.error('PDF export error:', e);
-
-    if (printWindow && !printWindow.closed) {
-      printWindow.close();
-    }
-
+    if (printWindow && !printWindow.closed) printWindow.close();
     alert('Không xuất được PDF: ' + (e.message || 'Lỗi xử lý báo cáo.'));
   } finally {
     busy = false;
