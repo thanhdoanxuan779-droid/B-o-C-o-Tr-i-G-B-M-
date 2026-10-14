@@ -1367,7 +1367,8 @@ await api('/api/reports',{
 }
 
 
-/* XUẤT PDF LIỀN MẠCH - TỰ CO VỪA CHIỀU NGANG */
+
+/* XUẤT PDF LIỀN MẠCH - HỖ TRỢ CÓ ẢNH */
 async function exportPDF(){
  if(busy) return;
 
@@ -1387,7 +1388,6 @@ async function exportPDF(){
   const source=document.querySelector('.content');
   if(!source) throw new Error('Không tìm thấy nội dung báo cáo.');
 
-  // Tạo bản sao riêng để xuất PDF
   clone=source.cloneNode(true);
 
   Object.assign(clone.style,{
@@ -1407,7 +1407,6 @@ async function exportPDF(){
    transform:'none'
   });
 
-  // Đồng bộ dữ liệu đang hiển thị trong app
   const oldFields=source.querySelectorAll('input,select,textarea');
   const newFields=clone.querySelectorAll('input,select,textarea');
 
@@ -1415,31 +1414,37 @@ async function exportPDF(){
    const cp=newFields[i];
    if(!cp) return;
 
-   if(el.type==='checkbox'||el.type==='radio'){
+   // Không sao chép giá trị của ô tải file.
+   // Gán giá trị file input sau khi chọn ảnh sẽ gây InvalidStateError.
+   if(el.type==='file'){
+    cp.value='';
+   }else if(el.type==='checkbox'||el.type==='radio'){
     cp.checked=el.checked;
     if(el.checked) cp.setAttribute('checked','checked');
     else cp.removeAttribute('checked');
    }else if(el.tagName==='SELECT'){
-    cp.value=el.value;
     Array.from(cp.options).forEach(option=>{
      option.selected=option.value===el.value;
     });
+   }else if(el.tagName==='TEXTAREA'){
+    cp.value=el.value;
+    cp.textContent=el.value;
    }else{
     cp.value=el.value;
     cp.setAttribute('value',el.value);
    }
-
-   if(el.tagName==='TEXTAREA'){
-    cp.textContent=el.value;
-   }
   });
 
-  // Bỏ nút bấm và thành phần không cần đưa vào báo cáo
+  // Không đưa các nút thao tác vào PDF.
   clone.querySelectorAll(
    '.no-print,.actions,#history,#draftStatus,.footer'
   ).forEach(el=>el.remove());
 
-  // Giữ màu nền, chữ và kích thước khi xuất
+  // Ẩn khung xem ảnh phóng to nếu có.
+  clone.querySelectorAll('.photo-viewer').forEach(el=>{
+   el.style.display='none';
+  });
+
   clone.querySelectorAll('input,select,textarea').forEach(el=>{
    el.style.color='#20312a';
    el.style.backgroundColor='#ffffff';
@@ -1450,7 +1455,23 @@ async function exportPDF(){
 
   document.body.appendChild(clone);
 
-  // Chụp toàn bộ nội dung từ trên xuống dưới
+  // Chờ tất cả ảnh trong bản sao tải xong.
+  const images=Array.from(clone.querySelectorAll('img'));
+
+  await Promise.all(images.map(img=>new Promise(resolve=>{
+   if(img.complete){
+    resolve();
+    return;
+   }
+
+   img.onload=()=>resolve();
+   img.onerror=()=>resolve();
+
+   // Tránh chờ vô hạn nếu một ảnh bị lỗi.
+   setTimeout(()=>resolve(),10000);
+  })));
+
+  // Chụp toàn bộ nội dung báo cáo.
   const canvas=await html2canvas(clone,{
    scale:1.5,
    useCORS:true,
@@ -1469,7 +1490,6 @@ async function exportPDF(){
    throw new Error('Không lấy được nội dung báo cáo.');
   }
 
-  // Tạo PDF một trang dài, chiều ngang cố định để tự vừa màn hình
   const {jsPDF}=window.jspdf;
   const pageWidth=210;
   const margin=3;
@@ -1477,10 +1497,9 @@ async function exportPDF(){
   const contentHeight=canvas.height*contentWidth/canvas.width;
   const pageHeight=contentHeight+margin*2;
 
-  // jsPDF giới hạn chiều cao trang
   if(pageHeight>14400){
    throw new Error(
-    'Báo cáo quá dài để xuất thành một trang PDF duy nhất. Hãy giảm bớt nội dung rồi thử lại.'
+    'Báo cáo quá dài để xuất thành một trang PDF duy nhất. Hãy giảm kích thước ảnh hoặc nội dung rồi thử lại.'
    );
   }
 
@@ -1495,7 +1514,7 @@ async function exportPDF(){
   pdf.rect(0,0,pageWidth,pageHeight,'F');
 
   pdf.addImage(
-   canvas.toDataURL('image/jpeg',0.92),
+   canvas.toDataURL('image/jpeg',0.85),
    'JPEG',
    margin,
    margin,
@@ -1518,7 +1537,6 @@ async function exportPDF(){
   btn.textContent=oldText;
  }
 }
-
 
 /* TỰ LƯU NHÁP */
 fields.forEach(el=>{
