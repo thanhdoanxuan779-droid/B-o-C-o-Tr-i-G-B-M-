@@ -1372,211 +1372,265 @@ await api('/api/reports',{
 
 
 
-/* XUẤT PDF DÀI LIỀN MẠCH - GIẢM TẢI CHO IPHONE */
+
+
+/* XUAT PDF - CHONG TREO KHI CO ANH MINH CHUNG */
 async function exportPDF(){
- if(busy) return;
+  if(busy) return;
 
- const btn=$('#pdfBtn');
- const oldText=btn.textContent;
- let clone=null;
+  const btn = $('#pdfBtn');
+  if(!btn) return;
 
- try{
-  if(!window.html2canvas||!window.jspdf){
-   throw new Error('Không tải được thư viện PDF. Kiểm tra mạng rồi tải lại app.');
-  }
+  const oldText = btn.textContent;
+  let clone = null;
+  let timeoutId = null;
 
-  busy=true;
-  btn.disabled=true;
+  try{
+    if(!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF){
+      throw new Error('Không tải được thư viện PDF. Hãy tải lại app và kiểm tra mạng.');
+    }
 
-  const source=document.querySelector('.content');
-  if(!source) throw new Error('Không tìm thấy nội dung báo cáo.');
+    busy = true;
+    btn.disabled = true;
 
-  btn.textContent='Đang chuẩn bị báo cáo…';
+    const source = document.querySelector('.content');
+    if(!source) throw new Error('Không tìm thấy nội dung báo cáo.');
 
-  clone=source.cloneNode(true);
+    btn.textContent = 'Đang chuẩn bị báo cáo…';
 
-  Object.assign(clone.style,{
-   position:'absolute',
-   left:'0',
-   top:'0',
-   width:'700px',
-   minWidth:'700px',
-   maxWidth:'700px',
-   height:'auto',
-   maxHeight:'none',
-   overflow:'visible',
-   margin:'0',
-   padding:'12px',
-   background:'#fff',
-   boxSizing:'border-box',
-   transform:'none',
-   zIndex:'-1',
-   pointerEvents:'none'
-  });
+    clone = source.cloneNode(true);
 
-  const oldFields=source.querySelectorAll('input,select,textarea');
-  const newFields=clone.querySelectorAll('input,select,textarea');
-
-  oldFields.forEach((el,i)=>{
-   const cp=newFields[i];
-   if(!cp) return;
-
-   if(el.type==='file'){
-    cp.value='';
-   }else if(el.type==='checkbox'||el.type==='radio'){
-    cp.checked=el.checked;
-    if(el.checked) cp.setAttribute('checked','checked');
-    else cp.removeAttribute('checked');
-   }else if(el.tagName==='SELECT'){
-    Array.from(cp.options).forEach(option=>{
-     option.selected=option.value===el.value;
+    Object.assign(clone.style,{
+      position:'fixed',
+      left:'-10000px',
+      top:'0',
+      width:'620px',
+      minWidth:'620px',
+      maxWidth:'620px',
+      height:'auto',
+      maxHeight:'none',
+      overflow:'visible',
+      margin:'0',
+      padding:'12px',
+      background:'#fff',
+      boxSizing:'border-box',
+      transform:'none',
+      zIndex:'-1',
+      pointerEvents:'none'
     });
-   }else if(el.tagName==='TEXTAREA'){
-    cp.value=el.value;
-    cp.textContent=el.value;
-   }else{
-    cp.value=el.value;
-    cp.setAttribute('value',el.value);
-   }
-  });
 
-  clone.querySelectorAll(
-   '.no-print,.actions,#history,.footer,.photo-viewer,.photo-buttons'
-  ).forEach(el=>el.remove());
+    const oldFields = source.querySelectorAll('input,select,textarea');
+    const newFields = clone.querySelectorAll('input,select,textarea');
 
-  clone.querySelectorAll('input,select,textarea').forEach(el=>{
-   el.style.color='#20312a';
-   el.style.backgroundColor='#fff';
-   el.style.boxShadow='none';
-   el.style.maxWidth='100%';
-   el.style.boxSizing='border-box';
-  });
+    oldFields.forEach((el,i)=>{
+      const cp = newFields[i];
+      if(!cp) return;
 
-  // Giảm kích thước ảnh để tránh quá tải bộ nhớ trên điện thoại.
-  clone.querySelectorAll('img').forEach(img=>{
-   img.style.maxWidth='100%';
-   img.style.height=img.style.height||'auto';
-  });
+      if(el.type === 'file'){
+        cp.value = '';
+      }else if(el.type === 'checkbox' || el.type === 'radio'){
+        cp.checked = el.checked;
+      }else if(el.tagName === 'SELECT'){
+        cp.selectedIndex = el.selectedIndex;
+      }else{
+        cp.value = el.value;
+        if(el.tagName === 'TEXTAREA') cp.textContent = el.value;
+      }
+    });
 
-  document.body.appendChild(clone);
+    clone.querySelectorAll(
+      '.no-print,.actions,#history,.footer,.photo-viewer,.photo-buttons'
+    ).forEach(el=>el.remove());
 
-  // Chờ ảnh tải xong trước khi chụp.
-  const images=Array.from(clone.querySelectorAll('img'));
+    clone.querySelectorAll('input,select,textarea').forEach(el=>{
+      Object.assign(el.style,{
+        color:'#20312a',
+        backgroundColor:'#fff',
+        boxShadow:'none',
+        maxWidth:'100%',
+        boxSizing:'border-box'
+      });
+    });
 
-  await Promise.all(images.map(img=>{
-   if(img.complete && img.naturalWidth>0) return Promise.resolve();
+    // Ảnh được giữ tỷ lệ, giới hạn chiều cao để tránh canvas quá lớn.
+    clone.querySelectorAll('img').forEach(img=>{
+      img.removeAttribute('loading');
+      img.style.maxWidth = '100%';
+      img.style.maxHeight = '220px';
+      img.style.width = 'auto';
+      img.style.height = 'auto';
+      img.style.objectFit = 'contain';
+    });
 
-   return new Promise(resolve=>{
-    const done=()=>resolve();
-    img.addEventListener('load',done,{once:true});
-    img.addEventListener('error',done,{once:true});
-    setTimeout(done,8000);
-   });
-  }));
+    document.body.appendChild(clone);
 
-  const formCopy=clone.querySelector('#reportForm');
-  if(!formCopy) throw new Error('Không tìm thấy biểu mẫu báo cáo.');
+    // Đợi tối đa 3 giây cho ảnh; ảnh hỏng không chặn xuất PDF.
+    const images = Array.from(clone.querySelectorAll('img'));
 
-  const sections=[
-   clone.querySelector('.summary'),
-   clone.querySelector('#draftStatus'),
-   ...Array.from(formCopy.children)
-  ].filter(el=>el && el.offsetHeight>0);
+    await Promise.race([
+      Promise.all(images.map(img=>new Promise(resolve=>{
+        if(img.complete){
+          if(!img.naturalWidth) img.style.display = 'none';
+          resolve();
+          return;
+        }
 
-  if(!sections.length) throw new Error('Không có nội dung để xuất PDF.');
+        let finished = false;
+        const done = ()=>{
+          if(finished) return;
+          finished = true;
+          clearTimeout(timer);
+          if(!img.naturalWidth) img.style.display = 'none';
+          resolve();
+        };
 
-  const rendered=[];
-  let totalHeight=6;
-  const pageWidth=210;
-  const margin=3;
-  const contentWidth=pageWidth-margin*2;
-  const gap=1.5;
+        img.addEventListener('load',done,{once:true});
+        img.addEventListener('error',done,{once:true});
+        const timer = setTimeout(done,2500);
+      }))),
+      new Promise(resolve=>setTimeout(resolve,3000))
+    ]);
 
-  for(let i=0;i<sections.length;i++){
-   btn.textContent='Đang tạo PDF '+(i+1)+'/'+sections.length+'…';
+    const formCopy = clone.querySelector('#reportForm');
+    if(!formCopy) throw new Error('Không tìm thấy biểu mẫu báo cáo.');
 
-   const section=sections[i];
+    const sections = [
+      clone.querySelector('.summary'),
+      clone.querySelector('#draftStatus'),
+      ...Array.from(formCopy.children)
+    ].filter(el=>el && el.offsetHeight > 0);
 
-   // Đợi chụp thật sự hoàn tất, không dùng bộ đếm 30 giây gây lỗi giả.
-   const canvas=await html2canvas(section,{
-    scale:0.65,
-    useCORS:true,
-    allowTaint:false,
-    backgroundColor:'#ffffff',
-    logging:false,
-    scrollX:0,
-    scrollY:0,
-    windowWidth:720,
-    imageTimeout:10000,
-    removeContainer:true
-   });
+    if(!sections.length) throw new Error('Không có nội dung để xuất PDF.');
 
-   if(!canvas.width||!canvas.height){
-    throw new Error('Không chụp được phần '+(i+1)+' của báo cáo.');
-   }
+    const {jsPDF} = window.jspdf;
+    const pdf = new jsPDF({
+      orientation:'portrait',
+      unit:'mm',
+      format:'a4',
+      compress:true
+    });
 
-   const image=canvas.toDataURL('image/jpeg',0.65);
-   const height=canvas.height*contentWidth/canvas.width;
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const margin = 8;
+    const contentWidth = pageWidth - margin * 2;
+    const contentHeight = pageHeight - margin * 2;
+    const bottom = pageHeight - margin;
+    const gap = 3;
 
-   rendered.push({image,height});
-   totalHeight+=height+gap;
+    let y = margin;
+    let hasContent = false;
 
-   canvas.width=1;
-   canvas.height=1;
+    // Giới hạn thời gian tổng để tránh nút treo mãi.
+    const exportStarted = Date.now();
 
-   if(totalHeight>14000){
-    throw new Error('Báo cáo quá dài để xuất thành một trang PDF. Hãy giảm số ảnh minh chứng.');
-   }
+    for(let i=0;i<sections.length;i++){
+      if(Date.now() - exportStarted > 120000){
+        throw new Error('Xuất PDF quá 2 phút. Hãy giảm số ảnh minh chứng rồi thử lại.');
+      }
 
-   // Cho điện thoại nghỉ ngắn giữa các phần.
-   await new Promise(resolve=>setTimeout(resolve,50));
+      btn.textContent = 'Đang tạo PDF ' + (i+1) + '/' + sections.length + '…';
+
+      // Chụp từng phần với độ phân giải thấp hơn để tiết kiệm RAM.
+      const canvas = await Promise.race([
+        html2canvas(sections[i],{
+          scale:0.55,
+          useCORS:true,
+          allowTaint:false,
+          backgroundColor:'#ffffff',
+          logging:false,
+          scrollX:0,
+          scrollY:0,
+          windowWidth:650,
+          imageTimeout:3000,
+          removeContainer:true
+        }),
+        new Promise((_,reject)=> {
+          timeoutId = setTimeout(
+            ()=>reject(new Error('Chụp nội dung bị treo. Hãy giảm số ảnh rồi thử lại.')),
+            20000
+          );
+        })
+      ]);
+
+      clearTimeout(timeoutId);
+      timeoutId = null;
+
+      if(!canvas.width || !canvas.height){
+        canvas.width = 1;
+        canvas.height = 1;
+        throw new Error('Không chụp được phần ' + (i+1) + '.');
+      }
+
+      const image = canvas.toDataURL('image/jpeg',0.55);
+      const imageHeight = canvas.height * contentWidth / canvas.width;
+
+      canvas.width = 1;
+      canvas.height = 1;
+
+      if(!Number.isFinite(imageHeight) || imageHeight <= 0){
+        throw new Error('Kích thước nội dung PDF không hợp lệ.');
+      }
+
+      // Phần vừa một trang được chuyển nguyên phần sang trang kế nếu cần.
+      if(imageHeight <= contentHeight && y + imageHeight > bottom){
+        pdf.addPage('a4','portrait');
+        y = margin;
+      }
+
+      // Phần cao hơn một trang được thu nhỏ để tránh cắt nội dung.
+      let drawWidth = contentWidth;
+      let drawHeight = imageHeight;
+
+      if(drawHeight > contentHeight){
+        const factor = contentHeight / drawHeight;
+        drawWidth *= factor;
+        drawHeight = contentHeight;
+      }
+
+      if(y + drawHeight > bottom){
+        pdf.addPage('a4','portrait');
+        y = margin;
+      }
+
+      pdf.addImage(
+        image,
+        'JPEG',
+        margin + (contentWidth - drawWidth)/2,
+        y,
+        drawWidth,
+        drawHeight,
+        undefined,
+        'FAST'
+      );
+
+      y += drawHeight + gap;
+      hasContent = true;
+
+      // Nhường thời gian cho Safari giải phóng bộ nhớ.
+      await new Promise(resolve=>setTimeout(resolve,80));
+    }
+
+    if(!hasContent) throw new Error('Không có nội dung PDF.');
+
+    btn.textContent = 'Đang lưu file PDF…';
+
+    const dateInput = $('#date');
+    const date = dateInput && dateInput.value ? dateInput.value : today();
+
+    pdf.save('Bao-cao-trai-ga-' + date + '.pdf');
+
+  }catch(e){
+    console.error('PDF export error:',e);
+    alert('Không xuất được PDF: ' + (e.message || 'Lỗi xử lý báo cáo.'));
+  }finally{
+    if(timeoutId) clearTimeout(timeoutId);
+    if(clone) clone.remove();
+
+    busy = false;
+    btn.disabled = false;
+    btn.textContent = oldText;
   }
-
-  btn.textContent='Đang ghép file PDF…';
-
-  const {jsPDF}=window.jspdf;
-  const pageHeight=totalHeight+margin;
-
-  const pdf=new jsPDF({
-   orientation:'portrait',
-   unit:'mm',
-   format:[pageWidth,pageHeight],
-   compress:true,
-   putOnlyUsedFonts:true
-  });
-
-  pdf.setFillColor(255,255,255);
-  pdf.rect(0,0,pageWidth,pageHeight,'F');
-
-  let y=margin;
-
-  for(const part of rendered){
-   pdf.addImage(
-    part.image,
-    'JPEG',
-    margin,
-    y,
-    contentWidth,
-    part.height,
-    undefined,
-    'FAST'
-   );
-
-   y+=part.height+gap;
-  }
-
-  const date=form.elements.date.value||today();
-  pdf.save('Bao-cao-trai-ga-'+date+'.pdf');
-
- }catch(e){
-  console.error('PDF export error:',e);
-  alert('Không xuất được PDF: '+(e.message||'Lỗi xử lý báo cáo.'));
- }finally{
-  if(clone) clone.remove();
-  busy=false;
-  btn.disabled=false;
-  btn.textContent=oldText;
- }
 }
 /* TỰ LƯU NHÁP */
 fields.forEach(el=>{
