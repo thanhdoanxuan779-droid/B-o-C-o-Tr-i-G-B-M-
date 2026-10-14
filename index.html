@@ -76,6 +76,39 @@ textarea{min-height:76px;resize:vertical}
 
 #photos{font-size:12px}
 
+/* SỬA LỆCH Ô NGÀY VÀ TRƯỞNG TRẠI */
+.card-body.grid[style*="grid-template-columns"] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  align-items: start !important;
+}
+
+.card-body.grid[style*="grid-template-columns"] > .field:not(.full) {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+.card-body.grid[style*="grid-template-columns"] > .field:not(.full) > input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 42px !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  font-size: 14px !important;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid #dce5df !important;
+  border-radius: 10px !important;
+  background: #fbfcfb !important;
+}
+
+.card-body.grid[style*="grid-template-columns"] > .field.full {
+  grid-column: 1 / -1 !important;
+}
+
+
 .photo-list{
   display:flex;
   flex-direction:column;
@@ -248,7 +281,8 @@ user-select: none !important;
 <main class="content">
  <div class="summary">
   <div class="stat"><div class="label">TỔNG ĐÀN CUỐI NGÀY</div><strong id="sFlock">10.005</strong><small>con</small></div>
-  <div class="stat"><div class="label">TỔNG TRỨNG THU</div><strong id="sEggs">0</strong><small>quả</small></div>
+  <div class="stat"><div class="label">TỔNG TRỨNG THU</div>
+<strong id="sEggs">0</strong><small>quả</small></div>
   <div class="stat"><div class="label">TỶ LỆ ĐẺ</div><strong id="sRate">0%</strong><small>trên tổng mái sống đầu ngày</small></div>
   <div class="stat"><div class="label">TỶ LỆ TRỨNG ĐẠT</div><strong id="sQuality">0%</strong><small>trên tổng trứng thu</small></div>
  </div>
@@ -278,17 +312,17 @@ user-select: none !important;
     <div class="field"><label>Nhập / điều chuyển vào</label><input name="flockIn" type="number" min="0" value="0"></div>
     <div class="field"><label>Điều chuyển ra</label><input name="flockOut" type="number" min="0" value="0"></div>
    </div>
-   <div class="result">
-  <span>Tổng đàn mái cuối ngày</span>
-  <strong id="rHensEnd">9.600 con</strong>
+  <div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
+  <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">TỔNG ĐÀN MÁI CUỐI NGÀY</span>
+  <strong id="rHensEnd" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">9.600 con</strong>
 </div>
-<div class="result">
-  <span>Tổng đàn trống cuối ngày</span>
-  <strong id="rRoostersEnd">403 con</strong>
+<div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
+  <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">TỔNG ĐÀN TRỐNG CUỐI NGÀY</span>
+  <strong id="rRoostersEnd" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">403 con</strong>
 </div>
-<div class="result">
-  <span>Tổng đàn sống cuối ngày</span>
-  <strong id="rFlock">10.003 con</strong>
+<div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
+  <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">TỔNG ĐÀN SỐNG CUỐI NGÀY</span>
+  <strong id="rFlock" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">10.003 con</strong>
 </div>
    <div class="divider"></div>
    <div class="field"><label>Biểu hiện bất thường</label><select name="abnormal"><option>Không</option><option>Có</option></select></div>
@@ -306,7 +340,11 @@ user-select: none !important;
     <div class="field"><label>Lượt 3 (quả)</label><input name="egg3" type="number" min="0" value="0"></div>
     <div class="field"><label>Lượt khác (quả)</label><input name="eggOther" type="number" min="0" value="0"></div>
    </div>
-   <div class="result"><span>Tổng trứng thu</span><strong id="rEggs">0 quả</strong></div>
+   <div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
+  <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;height:100%;box-sizing:border-box;min-width:0;">TỔNG TRỨNG THU</span>
+  <strong id="rEggs" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;height:100%;box-sizing:border-box;min-width:0;">0 quả</strong>
+</div>
+
    <div class="divider"></div>
    <p class="subhead">Phân loại trứng</p>
    <div class="grid">
@@ -315,7 +353,10 @@ user-select: none !important;
     <div class="field"><label>Trứng nứt / vỡ</label><input name="eggBroken" type="number" min="0" value="0"></div>
     <div class="field"><label>Loại khác</label><input name="eggOtherType" type="number" min="0" value="0"></div>
    </div>
-   <div class="result"><span>Tổng phân loại</span><strong id="rClassified">0 quả</strong></div>
+   <div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
+  <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">TỔNG PHÂN LOẠI</span>
+  <strong id="rClassified" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">0 quả</strong>
+</div>
    <p class="note" id="eggWarning"></p>
    <div class="divider"></div>
    <p class="subhead">Bàn giao và tồn kho trứng</p>
@@ -323,8 +364,11 @@ user-select: none !important;
     <div class="field"><label>Tồn đầu (quả)</label><input name="eggStockStart" type="number" min="0" value="0" readonly style="pointer-events:none;"></div>
     <div class="field"><label>Bàn Giao Kho Lạnh (quả)</label><input name="eggHandover" type="number" min="0" value="0"></div>
    </div>
-   <div class="result"><span>Tồn cuối dự kiến</span><strong id="rEggStock">0 quả</strong></div>
-   <p class="note">Tồn cuối = tồn đầu + tổng trứng thu − bàn giao kho.</p>
+   <div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
+  <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">TỒN CUỐI DỰ KIẾN</span>
+  <strong id="rEggStock" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">0 quả</strong>
+</div>
+<p class="note">Tồn cuối = tồn đầu + tổng trứng thu − bàn giao kho.</p>
 
 <div class="divider"></div>
 <p class="subhead">Kho lạnh trứng</p>
@@ -349,9 +393,23 @@ user-select: none !important;
    <div class="grid">
     <div class="field"><label>Tỷ lệ đẻ (%)</label><input id="rRateInput" readonly value="0%"></div>
     <div class="field"><label>Tỷ lệ trứng đạt (%)</label><input id="rQualityInput" readonly value="0%"></div>
+
    </div>
+<div id="rEggCumulative" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;">
+  <div style="background:#e8f5e9 !important;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:700;line-height:1.4;box-sizing:border-box;color:#198754 !important;min-width:0;overflow-wrap:anywhere;">
+    TỔNG TRỨNG ĐÃ NHẶT
+  </div>
+  <div style="background:#e8f5e9 !important;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:16px;font-weight:700;box-sizing:border-box;color:#198754 !important;min-width:0;">
+    <strong id="totalEggsSinceStart" style="color:#198754 !important;">0 quả</strong>
+  </div>
+<p class="note">
+ Tổng Trứng Đã Nhặt = Tổng Trứng Nhặt Từ Đầu Đàn Đến Hôm Nay.
+</p>
+</div>
+
   </div>
  </section>
+
 
  <!-- PHẦN CÁM - NƯỚC ĐÃ SỬA LẠI BỐ CỤC -->
  <section class="card">
@@ -368,7 +426,11 @@ user-select: none !important;
      <div class="field"><label>Nước gà đẻ tiêu thụ (lít)</label><input name="water" type="number" min="0" step="0.1" value="0"></div>
      <div class="field"><label>Tình trạng ăn/uống gà đẻ</label><select name="eating"><option>Bình thường</option><option>Ăn giảm</option><option>Uống giảm</option><option>Ăn/uống tăng bất thường</option><option>Có bất thường khác</option></select></div>
     </div>
-    <div class="result"><span>Tồn cuối cám gà đẻ</span><strong id="rFeed">0 bao (0 kg)</strong></div>
+    <div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
+  <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">TỒN CUỐI CÁM GÀ ĐẺ</span>
+  <strong id="rFeed" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">0 bao (0 kg)</strong>
+</div>
+</div>
    </div>
 
    <div class="feed-group">
@@ -381,7 +443,11 @@ user-select: none !important;
      <div class="field"><label>Nước gà trống tiêu thụ (lít)</label><input name="water2" type="number" min="0" step="0.1" value="0"></div>
      <div class="field"><label>Tình trạng ăn/uống gà trống</label><select name="eating2"><option>Bình thường</option><option>Ăn giảm</option><option>Uống giảm</option><option>Ăn/uống tăng bất thường</option><option>Có bất thường khác</option></select></div>
     </div>
-    <div class="result"><span>Tồn cuối cám gà trống</span><strong id="rFeed2">0 bao (0 kg)</strong></div>
+    <div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
+  <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">TỒN CUỐI CÁM GÀ TRỐNG</span>
+  <strong id="rFeed2" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">0 bao (0 kg)</strong>
+</div>
+</div>
    </div>
 
    <div class="divider"></div>
@@ -555,15 +621,40 @@ async function api(path,options={}){
  return result;
 }
 
+function updateCumulativeEggs(){
+  let total = 0;
+
+  (Array.isArray(reports) ? reports : []).forEach(report => {
+    const data = parseReportData(report.data);
+    if (!data) return;
+
+    total += Math.max(0, Number(data.egg1) || 0);
+    total += Math.max(0, Number(data.egg2) || 0);
+    total += Math.max(0, Number(data.egg3) || 0);
+    total += Math.max(0, Number(data.eggOther) || 0);
+  });
+
+  const el = document.getElementById('totalEggsSinceStart');
+  if (el) el.textContent = fmt(total) + ' quả';
+}
+
 /* TỔNG CÁM ĐÃ NHẬP TRÊN MÁY CHỦ */
+
 function updateCumulativeFeed(){
  let totalBags=0;
  let total2Bags=0;
 
- reports.forEach(report=>{
-  const data=report.data||{};
-  const bags=Number(data.feedIn||0);
-  const bags2=Number(data.feed2In||0);
+ (Array.isArray(reports)?reports:[]).forEach(report=>{
+  let data=report?.data??report;
+
+  if(typeof data==='string'){
+   try{data=JSON.parse(data)}catch(e){data={}}
+  }
+
+  if(!data||typeof data!=='object') return;
+
+  const bags=Number(String(data.feedIn??'').trim().replace(',','.'))||0;
+  const bags2=Number(String(data.feed2In??'').trim().replace(',','.'))||0;
 
   if(Number.isFinite(bags)&&bags>0) totalBags+=bags;
   if(Number.isFinite(bags2)&&bags2>0) total2Bags+=bags2;
@@ -574,6 +665,7 @@ function updateCumulativeFeed(){
  $('#totalFeed2Bags').value=fmt(total2Bags)+' bao';
  $('#totalFeed2Kg').value=fmt(total2Bags*25)+' kg';
 }
+
 
 /* QUẢN LÝ DANH SÁCH CÔNG NHÂN */
 function renderWorkers(){
@@ -626,14 +718,26 @@ function renderWorkers(){
   statusField.className='field';
   const statusLabel=document.createElement('label');
   statusLabel.textContent='Tình trạng';
-  const statusSelect=document.createElement('select');
+  const statusSelect = document.createElement('select');
 
-  ['Có mặt','Vắng','Nghỉ phép'].forEach(status=>{
-   const option=document.createElement('option');
-   option.value=status;
-   option.textContent=status;
-   statusSelect.appendChild(option);
-  });
+['Có mặt', 'Nghỉ Buổi Sáng', 'Nghỉ Buổi Chiều', 'Nghỉ cả ngày'].forEach(status => {
+  const option = document.createElement('option');
+  option.value = status;
+  option.textContent = status;
+  statusSelect.appendChild(option);
+});
+
+statusSelect.value = worker.status || 'Có mặt';
+
+statusSelect.addEventListener('change', () => {
+  workers[index].status = statusSelect.value;
+  scheduleDraftSave();
+});
+
+statusField.append(statusLabel, statusSelect);
+row.append(nameField, statusField);
+card.append(title, row);
+box.appendChild(card);
 
   statusSelect.value=worker.status||'Có mặt';
   statusSelect.addEventListener('change',()=>{
@@ -1298,22 +1402,40 @@ function renderHistory(){
  });
 }
 
-async function loadHistory(){
- $('#history').innerHTML='<div class="empty">Đang tải báo cáo từ máy chủ...</div>';
 
- try{
-  const result=await api('/api/reports');
-  reports=result.reports||[];
-  renderHistory();
-  updateCumulativeFeed();
- }catch(e){
-  $('#history').innerHTML='';
-  const message=document.createElement('div');
-  message.className='empty';
-  message.textContent='Không tải được báo cáo: '+e.message;
-  $('#history').append(message);
- }
+async function loadHistory(){
+  $('#history').innerHTML='<div class="empty">Đang tải báo cáo từ máy chủ...</div>';
+
+  try{
+    const result=await api('/api/reports');
+    reports=Array.isArray(result.reports)?result.reports:[];
+
+    console.log('KIỂM TRA BÁO CÁO CÁM:',reports.map(report=>{
+      let data=report.data??report;
+      if(typeof data==='string'){
+        try{data=JSON.parse(data)}catch(e){data={}};
+      }
+      return {
+        date:report.date??data.date,
+        feedIn:data.feedIn,
+        feed2In:data.feed2In,
+        dataKeys:Object.keys(data||{})
+      };
+    }));
+
+    renderHistory();
+    updateCumulativeFeed();
+    updateCumulativeEggs();
+  }catch(e){
+    $('#history').innerHTML='';
+    const message=document.createElement('div');
+    message.className='empty';
+    message.textContent='Không tải được báo cáo: '+e.message;
+    $('#history').append(message);
+    console.error('Lỗi tải lịch sử:',e);
+  }
 }
+
 
 /* LƯU BÁO CÁO LÊN D1 */
 async function save(){
@@ -1826,6 +1948,46 @@ function compressPhoto(file) {
     reader.readAsDataURL(file);
   });
 }
+
+/* TỰ MỞ APP NẾU ĐÃ LƯU MẬT KHẨU */
+async function autoLogin(){
+  const password = localStorage.getItem(PASSWORD_KEY);
+  if(!password) return;
+
+  try{
+    const res = await fetch(WORKER_URL + '/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({password})
+    });
+
+    const result = await res.json();
+
+    if(!res.ok || !result.ok){
+      localStorage.removeItem(PASSWORD_KEY);
+      return;
+    }
+
+    $('#loginScreen').style.display = 'none';
+    $('#mainApp').style.display = 'block';
+
+    renderWorkers();
+    calc();
+
+    await loadHistory();
+
+    const todayData = getSavedData(today());
+    restoreDraft(today(), !todayData);
+    restoreColdStoreDraft(today());
+    calc();
+
+  }catch(e){
+    console.error('Tự đăng nhập thất bại:', e);
+  }
+}
+
+autoLogin();
+
 
 $('#photos').addEventListener('change', async e => {
   const input = e.target;
