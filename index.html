@@ -1375,7 +1375,7 @@ await api('/api/reports',{
 
 
 
-/* PDF: BAO CAO LIEN MACH - MOI ANH MOT TRANG, KHONG CAT ANH */
+/* PDF: BAO CAO DAI LIEN MACH + MOI ANH MOT TRANG RIENG */
 async function exportPDF() {
   if (busy) return;
 
@@ -1388,7 +1388,7 @@ async function exportPDF() {
   try {
     busy = true;
     btn.disabled = true;
-    btn.textContent = 'Đang chuẩn bị báo cáo…';
+    btn.textContent = 'Đang chuẩn bị PDF…';
 
     const source = document.querySelector('.content');
     if (!source) throw new Error('Không tìm thấy nội dung báo cáo.');
@@ -1400,12 +1400,12 @@ async function exportPDF() {
 
     const clone = source.cloneNode(true);
 
-    // Đồng bộ giá trị đang nhập.
-    const originals = source.querySelectorAll('input,select,textarea');
-    const copies = clone.querySelectorAll('input,select,textarea');
+    // Sao chép đúng giá trị đang hiển thị trên app.
+    const oldFields = source.querySelectorAll('input,select,textarea');
+    const newFields = clone.querySelectorAll('input,select,textarea');
 
-    originals.forEach((el, i) => {
-      const cp = copies[i];
+    oldFields.forEach((el, i) => {
+      const cp = newFields[i];
       if (!cp) return;
 
       if (el.type === 'file') {
@@ -1430,7 +1430,7 @@ async function exportPDF() {
       '.no-print,.actions,#history,.footer,.photo-viewer,.photo-buttons'
     ).forEach(el => el.remove());
 
-    // Tìm từng ảnh minh chứng.
+    // Tìm ảnh minh chứng.
     const selectors = [
       '.photo-item img',
       '.photo-card img',
@@ -1444,18 +1444,19 @@ async function exportPDF() {
       selectors.flatMap(s => [...clone.querySelectorAll(s)])
     )];
 
-    // Lưu ảnh thành trang riêng; không giới hạn tỉ lệ ảnh.
-    const photoData = found.map(img => {
+    // Giữ nguyên ảnh gốc và gỡ ảnh khỏi phần báo cáo chữ.
+    const photos = found.map(img => {
+      const item = img.closest('.photo-item,.photo-card,.photo-box');
       const src = img.currentSrc || img.src;
       const alt = img.alt || '';
-      const parent = img.closest('.photo-item,.photo-card,.photo-box')
-        || img.parentElement;
 
-      if (parent) {
+      if (item) {
         const note = win.document.createElement('p');
         note.className = 'photo-note';
-        note.textContent = 'Ảnh minh chứng ở trang riêng phía sau báo cáo.';
-        parent.replaceWith(note);
+        note.textContent = 'Ảnh minh chứng được in ở phần ảnh phía sau.';
+        item.replaceWith(note);
+      } else {
+        img.remove();
       }
 
       return { src, alt };
@@ -1476,74 +1477,81 @@ async function exportPDF() {
 ${links}
 ${styles}
 <style>
-@page { size: A4 portrait; margin: 7mm; }
-* { box-sizing: border-box !important; }
+/* Phần báo cáo chữ: không đặt chiều cao cố định */
+@page reportPage {
+  size: 210mm auto;
+  margin: 7mm;
+}
+@page photoPage {
+  size: A4 portrait;
+  margin: 5mm;
+}
 html, body {
   margin: 0 !important;
   padding: 0 !important;
-  width: auto !important;
   height: auto !important;
+  min-height: 0 !important;
   overflow: visible !important;
   background: #fff !important;
   color: #111 !important;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
+* { box-sizing: border-box !important; }
 #printRoot { width: 100%; }
 .content {
+  page: reportPage;
   width: 100% !important;
   max-width: none !important;
   min-width: 0 !important;
   height: auto !important;
   max-height: none !important;
+  overflow: visible !important;
   margin: 0 !important;
   padding: 0 !important;
-  overflow: visible !important;
   transform: none !important;
   box-shadow: none !important;
 }
 input, select, textarea {
-  max-width: 100% !important;
   color: #111 !important;
   background: #fff !important;
   opacity: 1 !important;
   -webkit-text-fill-color: #111 !important;
+  max-width: 100% !important;
 }
 textarea { white-space: pre-wrap !important; }
 button, .no-print, .actions, #history, .footer,
 .photo-viewer, .photo-buttons { display: none !important; }
-
-/* Không ép cả khối lớn nằm trên một trang gây khoảng trắng. */
 .card, .card-body, .grid, .field, form, #reportForm, .summary {
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
   break-inside: auto !important;
   page-break-inside: auto !important;
-  margin-bottom: 3mm !important;
 }
 .photo-note {
-  margin: 2mm 0 !important;
-  padding: 0 !important;
+  margin: 1mm 0 !important;
   font-size: 9pt !important;
   color: #555 !important;
 }
 
-/* Ảnh sát nhau, mỗi ảnh một trang riêng, không crop. */
+/* Mỗi ảnh một trang A4, không đặt height cố định cho khung */
 .photo-print-page {
-  page-break-before: always !important;
+  page: photoPage;
   break-before: page !important;
-  page-break-after: always !important;
+  page-break-before: always !important;
   break-after: page !important;
+  page-break-after: always !important;
   width: 100% !important;
-  height: 282mm !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
   margin: 0 !important;
   padding: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0 !important;
   overflow: visible !important;
 }
 .photo-print-page img {
@@ -1551,19 +1559,15 @@ button, .no-print, .actions, #history, .footer,
   width: auto !important;
   height: auto !important;
   max-width: 100% !important;
-  max-height: 270mm !important;
+  max-height: 275mm !important;
+  object-fit: contain !important;
   margin: 0 auto !important;
   padding: 0 !important;
-  object-fit: contain !important;
 }
 .photo-caption {
   margin: 2mm 0 0 !important;
-  padding: 0 !important;
   font-size: 10pt !important;
   text-align: center !important;
-}
-@media print {
-  html, body { overflow: visible !important; }
 }
 </style>
 </head>
@@ -1574,16 +1578,13 @@ button, .no-print, .actions, #history, .footer,
     const root = win.document.getElementById('printRoot');
     root.appendChild(win.document.importNode(clone, true));
 
-    // Tạo các trang ảnh sau phần báo cáo.
-    photoData.forEach(({src, alt}) => {
+    photos.forEach(({src, alt}) => {
       const page = win.document.createElement('section');
       page.className = 'photo-print-page';
 
       const img = win.document.createElement('img');
       img.src = src;
       img.alt = alt;
-      img.removeAttribute('loading');
-
       page.appendChild(img);
 
       if (alt) {
@@ -1596,14 +1597,14 @@ button, .no-print, .actions, #history, .footer,
       root.appendChild(page);
     });
 
-    // Đợi ảnh sẵn sàng trước khi in.
+    // Chờ ảnh giải mã xong, tránh ảnh in ra trắng.
     await Promise.all([...root.querySelectorAll('img')].map(async img => {
       img.removeAttribute('loading');
 
       if (!img.complete) {
         await new Promise(resolve => {
-          img.addEventListener('load', resolve, {once:true});
-          img.addEventListener('error', resolve, {once:true});
+          img.addEventListener('load', resolve, { once: true });
+          img.addEventListener('error', resolve, { once: true });
           setTimeout(resolve, 10000);
         });
       }
@@ -1617,9 +1618,12 @@ button, .no-print, .actions, #history, .footer,
     win.focus();
 
     setTimeout(() => {
-      try { win.print(); }
-      catch (e) { alert('Không mở được hộp thoại in PDF.'); }
-    }, 400);
+      try {
+        win.print();
+      } catch (e) {
+        alert('Không mở được chức năng in PDF.');
+      }
+    }, 500);
 
   } catch (e) {
     console.error('PDF export error:', e);
