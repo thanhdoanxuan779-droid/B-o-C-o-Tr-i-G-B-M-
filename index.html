@@ -246,28 +246,122 @@ pointer-events: none !important;
 user-select: none !important;
 }
 
+
 </style>
 </head>
 <body>
 
-<div id="loginScreen" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#eaf5ee,#f5f8f6);display:flex;align-items:center;justify-content:center;padding:22px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-  <div style="background:#fff;padding:28px 23px;border-radius:24px;width:100%;max-width:360px;box-shadow:0 15px 45px #146c4318;border:1px solid #e5ebe7">
+<div id="loginScreen" style="
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:linear-gradient(145deg,#eaf5ee,#f5f8f6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  width:100%;
+  min-height:100vh;
+  min-height:100dvh;
+  padding:20px;
+  margin:0;
+  overflow-y:auto;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+">
+  <div style="
+    background:#fff;
+    padding:28px 23px;
+    border-radius:24px;
+    width:100%;
+    max-width:360px;
+    box-sizing:border-box;
+    margin:auto;
+    flex-shrink:0;
+    box-shadow:0 15px 45px #146c4318;
+    border:1px solid #e5ebe7;
+  ">
     <div style="text-align:center;margin-bottom:26px">
-      <div style="width:76px;height:76px;border-radius:24px;background:#e5f5eb;display:flex;align-items:center;justify-content:center;font-size:39px;margin:0 auto 16px">🐔</div>
-      <div style="font-size:21px;font-weight:800;color:#146c43">TRẠI GÀ BỐ MẸ</div>
-      <div style="font-size:12px;color:#718078;margin-top:6px">HỆ THỐNG QUẢN LÝ VÀ BÁO CÁO</div>
+      <div style="
+        width:76px;height:76px;
+        border-radius:24px;
+        background:#e5f5eb;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:39px;
+        margin:0 auto 16px;
+      ">🐔</div>
+      <div style="font-size:21px;font-weight:800;color:#146c43">
+        TRẠI GÀ BỐ MẸ
+      </div>
+      <div style="font-size:12px;color:#718078;margin-top:6px">
+        HỆ THỐNG QUẢN LÝ VÀ BÁO CÁO
+      </div>
     </div>
-    <div style="font-size:14px;font-weight:700;color:#20312a;margin-bottom:9px">Mã truy cập</div>
-    <div style="display:flex;align-items:center;gap:10px;border:1px solid #dce5df;background:#fbfcfb;border-radius:13px;padding:0 13px">
-      <span style="font-size:19px">🔒</span>
-      <input id="loginPassword" type="password" placeholder="Nhập mã truy cập" autocomplete="current-password" style="border:0;box-shadow:none;background:transparent;padding:15px 0;flex:1;min-width:0;outline:none">
+    <div style="font-size:14px;font-weight:700;color:#20312a;margin-bottom:9px">
+      Mã truy cập
     </div>
-    <div id="loginError" style="color:#dc3545;font-size:12px;min-height:18px;margin-top:8px"></div>
-    <button id="loginBtn" type="button" style="width:100%;border:0;border-radius:13px;padding:15px;background:linear-gradient(135deg,#146c43,#198754);color:white;font-size:15px;font-weight:800;box-shadow:0 6px 15px #146c4330">VÀO ỨNG DỤNG　→</button>
-    <div style="text-align:center;font-size:11px;color:#718078;margin-top:19px">🛡️ Truy cập được bảo vệ bằng mã</div>
+    <div style="
+      display:flex;
+      align-items:center;
+      gap:10px;
+      width:100%;
+      box-sizing:border-box;
+      border:1px solid #dce5df;
+      background:#fbfcfb;
+      border-radius:13px;
+      padding:0 13px;
+    ">
+      <span style="font-size:19px;flex-shrink:0">🔒</span>
+      <input
+        id="loginPassword"
+        type="password"
+        placeholder="Nhập mã truy cập"
+        autocomplete="current-password"
+        style="
+          display:block;
+          width:100%;
+          min-width:0;
+          flex:1;
+          box-sizing:border-box;
+          border:0;
+          box-shadow:none;
+          background:transparent;
+          padding:15px 0;
+          margin:0;
+          outline:none;
+          font-size:16px;
+        "
+      >
+    </div>
+    <div id="loginError" style="
+      color:#dc3545;
+      font-size:12px;
+      min-height:18px;
+      margin-top:8px;
+    "></div>
+    <button id="loginBtn" type="button" style="
+      display:block;
+      width:100%;
+      box-sizing:border-box;
+      margin:0;
+      border:0;
+      border-radius:13px;
+      padding:15px;
+      background:linear-gradient(135deg,#146c43,#198754);
+      color:white;
+      font-size:15px;
+      font-weight:800;
+      box-shadow:0 6px 15px #146c4330;
+    ">VÀO ỨNG DỤNG　→</button>
+    <div style="
+      text-align:center;
+      font-size:11px;
+      color:#718078;
+      margin-top:19px;
+    ">🛡️ Truy cập được bảo vệ bằng mã</div>
   </div>
 </div>
-
 <div id="mainApp" style="display:none">
 <header class="header">
  <div class="top">
@@ -1948,49 +2042,58 @@ function compressPhoto(file) {
     reader.readAsDataURL(file);
   });
 }
-/* TỰ ĐĂNG NHẬP KHI ĐÃ LƯU MẬT KHẨU */
+/* TỰ ĐĂNG NHẬP - LUÔN KIỂM TRA ÍT NHẤT 1,5 GIÂY */
 async function autoLogin() {
   const password = localStorage.getItem(PASSWORD_KEY);
   if (!password) return;
   const loginScreen = document.getElementById('loginScreen');
   const mainApp = document.getElementById('mainApp');
   const btn = document.getElementById('loginBtn');
-  const oldText = btn ? btn.textContent : '';
-  // Hiện màn hình kiểm tra, chưa cho vào app ngay
   if (loginScreen) loginScreen.style.display = 'block';
   if (mainApp) mainApp.style.display = 'none';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Đang kiểm tra...';
+  }
+  const startTime = Date.now();
   try {
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = 'Đang kiểm tra...';
-    }
     const res = await fetch(WORKER_URL + '/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password })
     });
     const result = await res.json();
+    // Giữ màn hình kiểm tra ít nhất 1,5 giây
+    const remaining = 1500 - (Date.now() - startTime);
+    if (remaining > 0) {
+      await new Promise(resolve => setTimeout(resolve, remaining));
+    }
     if (!res.ok || !result.ok) {
       localStorage.removeItem(PASSWORD_KEY);
-      if (btn) btn.textContent = 'Đăng nhập';
+      if (loginScreen) loginScreen.style.display = 'block';
+      if (mainApp) mainApp.style.display = 'none';
       return;
     }
     if (loginScreen) loginScreen.style.display = 'none';
     if (mainApp) mainApp.style.display = 'block';
     renderWorkers();
     calc();
-    await loadHistory();
     const todayData = getSavedData(today());
     restoreDraft(today(), !todayData);
     restoreColdStoreDraft(today());
     calc();
+    loadHistory().catch(e => {
+      console.error('Tải lịch sử thất bại:', e);
+    });
   } catch (e) {
     console.error('Tự đăng nhập thất bại:', e);
-    // Lỗi mạng thì giữ mật khẩu để có thể thử lại.
+    if (loginScreen) loginScreen.style.display = 'block';
+    if (mainApp) mainApp.style.display = 'none';
+    // Lỗi mạng thì giữ mật khẩu để thử lại
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.textContent = oldText || 'Đăng nhập';
+      btn.textContent = 'Đăng nhập';
     }
   }
 }
