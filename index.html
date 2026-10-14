@@ -1607,23 +1607,18 @@ await api('/api/reports',{
 
 async function exportPDF() {
   if (busy) return;
-
   const btn = document.querySelector('#pdfBtn');
   const source = document.querySelector('.content');
-
   if (!btn || !source) {
     alert('Không tìm thấy nội dung báo cáo.');
     return;
   }
-
   const oldText = btn.textContent;
   let stage = null;
-
   try {
     busy = true;
     btn.disabled = true;
-    btn.textContent = 'Đang tạo PDF...';
-
+    btn.textContent = 'Đang chuẩn bị PDF...';
     if (!window.html2pdf) {
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -1635,29 +1630,21 @@ async function exportPDF() {
         document.head.appendChild(script);
       });
     }
-
     const clone = source.cloneNode(true);
-
     const originals = source.querySelectorAll('input, select, textarea');
     const copies = clone.querySelectorAll('input, select, textarea');
-
     originals.forEach((el, i) => {
       const cp = copies[i];
       if (!cp) return;
-
       if (el.type === 'file') {
         cp.remove();
         return;
       }
-
       if (el.type === 'checkbox' || el.type === 'radio') {
         cp.checked = el.checked;
         cp.toggleAttribute('checked', el.checked);
-        cp.classList.toggle('pdf-filled', el.checked);
-        cp.classList.toggle('pdf-empty', !el.checked);
         return;
       }
-
       if (el.tagName === 'SELECT') {
         cp.value = el.value;
         Array.from(cp.options).forEach(option => {
@@ -1668,27 +1655,22 @@ async function exportPDF() {
         cp.setAttribute('value', el.value);
         if (el.tagName === 'TEXTAREA') cp.textContent = el.value;
       }
-
-      const filled = String(el.value || '').trim() !== '';
-      cp.classList.toggle('pdf-filled', filled);
-      cp.classList.toggle('pdf-empty', !filled);
-
-      if (!filled) cp.removeAttribute('placeholder');
     });
-
+    clone.querySelectorAll(
+      'button, .no-print, .actions, #history, .photo-viewer, .photo-buttons'
+    ).forEach(el => el.remove());
+    clone.querySelectorAll('input[type="file"]').forEach(el => el.remove());
     stage = document.createElement('div');
     stage.style.cssText =
-      'position:fixed;left:-20000px;top:0;z-index:-1;' +
-      'background:#fff;overflow:visible;height:auto;max-height:none;transform:none';
-
+      'position:fixed;left:-30000px;top:0;' +
+      'background:#fff;overflow:visible;height:auto;max-height:none;' +
+      'transform:none;z-index:-1;';
     const width = Math.max(
       source.getBoundingClientRect().width,
       source.scrollWidth,
       320
     );
-
     stage.style.width = width + 'px';
-
     clone.style.setProperty('width', width + 'px', 'important');
     clone.style.setProperty('max-width', 'none', 'important');
     clone.style.setProperty('height', 'auto', 'important');
@@ -1696,44 +1678,31 @@ async function exportPDF() {
     clone.style.setProperty('overflow', 'visible', 'important');
     clone.style.setProperty('transform', 'none', 'important');
     clone.style.setProperty('box-shadow', 'none', 'important');
-
-    clone.querySelectorAll(
-      'button, .no-print, .actions, #history, .photo-viewer, .photo-buttons'
-    ).forEach(el => el.remove());
-
-    clone.querySelectorAll('input[type="file"]').forEach(el => el.remove());
-
-    clone.querySelectorAll('.photo-list').forEach(list => {
-      list.style.setProperty('display', 'flex', 'important');
-      list.style.setProperty('flex-direction', 'column', 'important');
-      list.style.setProperty('width', '100%', 'important');
-      list.style.setProperty('gap', '12px', 'important');
+    clone.querySelectorAll('.photo-list').forEach(el => {
+      el.style.setProperty('display', 'flex', 'important');
+      el.style.setProperty('flex-direction', 'column', 'important');
+      el.style.setProperty('width', '100%', 'important');
+      el.style.setProperty('gap', '8px', 'important');
     });
-
     clone.querySelectorAll('img').forEach(img => {
       img.style.setProperty('display', 'block', 'important');
-      img.style.setProperty('width', '100%', 'important');
       img.style.setProperty('max-width', '100%', 'important');
       img.style.setProperty('max-height', 'none', 'important');
       img.style.setProperty('height', 'auto', 'important');
       img.style.setProperty('object-fit', 'contain', 'important');
     });
-
     stage.appendChild(clone);
     document.body.appendChild(stage);
-
     await Promise.all(
       Array.from(clone.querySelectorAll('img')).map(async img => {
         img.removeAttribute('loading');
-
         if (!img.complete) {
           await new Promise(resolve => {
             img.addEventListener('load', resolve, { once: true });
             img.addEventListener('error', resolve, { once: true });
-            setTimeout(resolve, 15000);
+            setTimeout(resolve, 10000);
           });
         }
-
         if (img.decode) {
           try {
             await img.decode();
@@ -1741,110 +1710,127 @@ async function exportPDF() {
         }
       })
     );
-
     await new Promise(resolve =>
       requestAnimationFrame(() =>
         requestAnimationFrame(resolve)
       )
     );
-
-    const pxWidth = Math.max(clone.scrollWidth, width);
-    const pxHeight = Math.max(
+    const pxWidth = Math.ceil(Math.max(clone.scrollWidth, width));
+    const pxHeight = Math.ceil(Math.max(
       clone.scrollHeight,
       clone.getBoundingClientRect().height
-    );
-
+    ));
     if (!pxWidth || !pxHeight) {
-      throw new Error('Báo cáo chưa có nội dung để xuất.');
+      throw new Error('Không tìm thấy nội dung để xuất PDF.');
     }
-
     const mmPerPx = 25.4 / 96;
     const pdfWidth = pxWidth * mmPerPx;
     const pdfHeight = pxHeight * mmPerPx;
-
-    if (pdfHeight > 15000 || pdfWidth > 15000) {
-      throw new Error('Báo cáo quá dài để tạo một trang PDF.');
+    // Giữ nguyên một trang dài, không tự chia A4.
+    // PDF có giới hạn kích thước trang; báo lỗi rõ ràng nếu vượt giới hạn.
+    if (pdfWidth > 5000 || pdfHeight > 5000) {
+      throw new Error(
+        'Báo cáo vượt giới hạn kích thước của một trang PDF. ' +
+        'Hãy giảm số lượng ảnh hoặc thu nhỏ ảnh rồi xuất lại.'
+      );
     }
-
-    const dateInput = document.querySelector('#date');
-    const dateText = dateInput && dateInput.value
-      ? dateInput.value
-      : new Date().toISOString().slice(0, 10);
-
+    const dateText = document.querySelector('#date')?.value ||
+      new Date().toLocaleDateString('en-CA');
     const filename = 'Bao-cao-trai-ga-' + dateText + '.pdf';
-
-    const options = {
-      margin: 0,
-      filename,
-      image: { type: 'jpeg', quality: 1 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: pxWidth,
-        height: pxHeight,
-        windowWidth: pxWidth,
-        scrollX: 0,
-        scrollY: 0
-      },
-      jsPDF: {
-        unit: 'mm',
-        format: [pdfWidth, pdfHeight],
-        orientation: 'portrait',
-        compress: true,
-        hotfixes: ['px_scaling']
-      },
-      pagebreak: { mode: [] }
-    };
-
+    // Tự giảm độ phân giải theo kích thước để hạn chế lỗi canvas.
+    const maxCanvasSide = 12000;
+    const maxCanvasPixels = 30000000;
+    const scale = Math.min(
+      1.5,
+      maxCanvasSide / pxWidth,
+      maxCanvasSide / pxHeight,
+      Math.sqrt(maxCanvasPixels / (pxWidth * pxHeight))
+    );
+    if (!Number.isFinite(scale) || scale <= 0) {
+      throw new Error('Kích thước báo cáo không hợp lệ để tạo PDF.');
+    }
+    btn.textContent = 'Đang dựng báo cáo...';
+    const canvas = await html2canvas(clone, {
+      scale,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: pxWidth,
+      height: pxHeight,
+      windowWidth: pxWidth,
+      scrollX: 0,
+      scrollY: 0
+    });
+    if (!canvas.width || !canvas.height) {
+      throw new Error('Không tạo được ảnh báo cáo. Hãy thử giảm số ảnh.');
+    }
     btn.textContent = 'Đang tạo file PDF...';
-
-    const pdf = await window.html2pdf()
-      .set(options)
-      .from(clone)
-      .toPdf()
-      .get('pdf');
-
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: [pdfWidth, pdfHeight],
+      compress: true,
+      hotfixes: ['px_scaling']
+    });
+    const imageData = canvas.toDataURL('image/jpeg', 0.88);
+    pdf.addImage(
+      imageData,
+      'JPEG',
+      0,
+      0,
+      pdfWidth,
+      pdfHeight,
+      undefined,
+      'FAST'
+    );
+    // Giải phóng bộ nhớ canvas sau khi đã đưa ảnh vào PDF.
+    canvas.width = 1;
+    canvas.height = 1;
     const blob = pdf.output('blob');
     const file = new File([blob], filename, {
       type: 'application/pdf'
     });
-
-    // Ưu tiên mở bảng chia sẻ iPhone để chọn Zalo
+    // Xong bước tạo PDF mới chuyển sang chia sẻ.
+    // Lỗi chia sẻ không bị nhầm thành lỗi tạo PDF.
     if (
       navigator.share &&
       navigator.canShare &&
       navigator.canShare({ files: [file] })
     ) {
-      await navigator.share({
-        files: [file],
-        title: filename
-      });
+      try {
+        await navigator.share({
+          files: [file],
+          title: filename
+        });
+      } catch (shareError) {
+        if (shareError.name === 'AbortError') return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
     } else {
-      // Trình duyệt không hỗ trợ chia sẻ file trực tiếp
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
-      a.style.display = 'none';
-
       document.body.appendChild(a);
       a.click();
       a.remove();
-
       setTimeout(() => URL.revokeObjectURL(url), 60000);
     }
-
   } catch (error) {
-    if (error.name !== 'AbortError') {
-      console.error('PDF export error:', error);
-      alert(
-        'Không tạo được hoặc không chia sẻ được PDF: ' +
-        (error.message || 'Lỗi xử lý báo cáo.')
-      );
-    }
+    console.error('PDF export error:', error);
+    alert(
+      'Không tạo được PDF: ' +
+      (error.message || 'Lỗi xử lý báo cáo.')
+    );
   } finally {
     if (stage) stage.remove();
     busy = false;
