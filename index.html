@@ -1255,7 +1255,7 @@ async function exportPDF(){
 
  const btn=$('#pdfBtn');
  const oldText=btn.textContent;
- let pdfClone=null;
+ let clone=null;
 
  try{
   if(!window.html2canvas||!window.jspdf){
@@ -1267,161 +1267,114 @@ async function exportPDF(){
   btn.textContent='Đang tạo PDF…';
 
   const source=document.querySelector('.content');
-  pdfClone=source.cloneNode(true);
 
-  Object.assign(pdfClone.style,{
+  clone=source.cloneNode(true);
+
+  Object.assign(clone.style,{
    position:'fixed',
    left:'-10000px',
    top:'0',
    width:'760px',
    maxWidth:'none',
-   padding:'16px',
-   margin:'0',
-   background:'#ffffff',
-   boxSizing:'border-box',
    height:'auto',
    maxHeight:'none',
    overflow:'visible',
-   zIndex:'-1'
+   padding:'16px',
+   margin:'0',
+   background:'#ffffff',
+   boxSizing:'border-box'
   });
 
-  // Sao chép giá trị hiện tại của các ô nhập liệu.
-  const originalFields=source.querySelectorAll('input,select,textarea');
-  const clonedFields=pdfClone.querySelectorAll('input,select,textarea');
+  // Giữ nguyên giá trị đang hiển thị trong các ô.
+  const oldFields=source.querySelectorAll('input,select,textarea');
+  const newFields=clone.querySelectorAll('input,select,textarea');
 
-  originalFields.forEach((el,i)=>{
-   const copy=clonedFields[i];
-   if(!copy) return;
+  oldFields.forEach((el,i)=>{
+   const cp=newFields[i];
+   if(!cp) return;
 
    if(el.type==='checkbox'||el.type==='radio'){
-    copy.checked=el.checked;
+    cp.checked=el.checked;
    }else{
-    copy.value=el.value;
+    cp.value=el.value;
    }
   });
 
-  // Bỏ các nút và phần không cần in.
-  pdfClone.querySelectorAll(
-   '.no-print,.draft-status,.footer,.actions'
+  clone.querySelectorAll(
+   '.no-print,.actions,#history,#draftStatus,.footer'
   ).forEach(el=>el.remove());
 
-  pdfClone.querySelectorAll('input,select,textarea').forEach(el=>{
+  clone.querySelectorAll('input,select,textarea').forEach(el=>{
    el.style.color='#20312a';
    el.style.backgroundColor='#ffffff';
    el.style.boxShadow='none';
    el.style.maxWidth='100%';
-
-   if(el.type==='checkbox'){
-    el.style.accentColor='#146c43';
-   }
   });
 
-  pdfClone.querySelectorAll(
-   '.card,.stat,.feed-group,.feed-total-group'
-  ).forEach(el=>{
-   el.style.breakInside='avoid';
-   el.style.pageBreakInside='avoid';
+  document.body.appendChild(clone);
+
+  // Chụp toàn bộ báo cáo từ đầu đến cuối.
+  const canvas=await html2canvas(clone,{
+   scale:1.5,
+   useCORS:true,
+   allowTaint:false,
+   backgroundColor:'#ffffff',
+   logging:false,
+   windowWidth:800,
+   windowHeight:clone.scrollHeight,
+   scrollX:0,
+   scrollY:0
   });
 
-  document.body.appendChild(pdfClone);
+  if(!canvas.width||!canvas.height){
+   throw new Error('Không lấy được nội dung báo cáo.');
+  }
 
   const {jsPDF}=window.jspdf;
+
+  // Một trang PDF dài, không chia trang A4.
+  const pageWidth=210;
+  const margin=5;
+  const contentWidth=pageWidth-margin*2;
+  const contentHeight=canvas.height*contentWidth/canvas.width;
+  const pageHeight=contentHeight+margin*2;
+
+  // jsPDF giới hạn chiều dài trang tùy phiên bản.
+  if(pageHeight>14400){
+   throw new Error(
+    'Báo cáo quá dài để tạo một trang PDF duy nhất. Hãy dùng PDF nhiều trang.'
+   );
+  }
+
   const pdf=new jsPDF({
    orientation:'portrait',
    unit:'mm',
-   format:'a4',
+   format:[pageWidth,pageHeight],
    compress:true
   });
 
-  const pageWidth=pdf.internal.pageSize.getWidth();
-  const pageHeight=pdf.internal.pageSize.getHeight();
-  const margin=8;
-  const printableWidth=pageWidth-margin*2;
-  const printableHeight=pageHeight-margin*2;
-  const gap=3;
+  pdf.setFillColor(255,255,255);
+  pdf.rect(0,0,pageWidth,pageHeight,'F');
 
-  let y=margin;
-  let pageHasContent=false;
+  pdf.addImage(
+   canvas.toDataURL('image/jpeg',0.92),
+   'JPEG',
+   margin,
+   margin,
+   contentWidth,
+   contentHeight,
+   undefined,
+   'FAST'
+  );
 
-  // Chia theo từng khối, tránh cắt ngang khối khi sang trang.
-  const summary=pdfClone.querySelector('.summary');
-  const formClone=pdfClone.querySelector('form');
-  const blocks=[];
-
-  if(summary) blocks.push(summary);
-
-  if(formClone){
-   [...formClone.children].forEach(el=>{
-    if(!el.classList.contains('no-print')){
-     blocks.push(el);
-    }
-   });
-  }
-
-  if(!blocks.length){
-   throw new Error('Không tìm thấy nội dung báo cáo để xuất PDF.');
-  }
-
-  for(const block of blocks){
-   const canvas=await html2canvas(block,{
-    scale:2,
-    useCORS:true,
-    backgroundColor:'#ffffff',
-    logging:false,
-    windowWidth:780,
-    scrollX:0,
-    scrollY:0
-   });
-
-   if(!canvas.width||!canvas.height) continue;
-
-   let imgWidth=printableWidth;
-   let imgHeight=canvas.height*imgWidth/canvas.width;
-
-   // Khối quá cao: thu nhỏ nguyên khối để không bị cắt.
-   if(imgHeight>printableHeight){
-    const ratio=printableHeight/imgHeight;
-    imgWidth*=ratio;
-    imgHeight=printableHeight;
-   }
-
-   // Nếu không đủ chỗ, chuyển nguyên khối sang trang mới.
-   if(
-    pageHasContent &&
-    y+gap+imgHeight>pageHeight-margin
-   ){
-    pdf.addPage();
-    y=margin;
-    pageHasContent=false;
-   }
-
-   if(pageHasContent) y+=gap;
-
-   const x=margin+(printableWidth-imgWidth)/2;
-
-   pdf.addImage(
-    canvas.toDataURL('image/jpeg',0.95),
-    'JPEG',
-    x,
-    y,
-    imgWidth,
-    imgHeight,
-    undefined,
-    'FAST'
-   );
-
-   y+=imgHeight;
-   pageHasContent=true;
-  }
-
-  const date=$('#date').value||today();
+  const date=form.elements.date?.value||today();
   pdf.save('Bao-cao-trai-ga-'+date+'.pdf');
 
  }catch(e){
-  console.error('PDF export error:',e);
+  console.error(e);
   alert('Không xuất được PDF: '+e.message);
  }finally{
-  if(pdfClone) pdfClone.remove();
+  if(clone) clone.remove();
   busy=false;
   btn.disabled=false;
   btn.textContent=oldText;
