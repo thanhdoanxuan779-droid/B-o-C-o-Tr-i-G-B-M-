@@ -524,7 +524,6 @@ user-select: none !important;
   <strong id="rFeed" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">0 bao (0 kg)</strong>
 </div>
 </div>
-   </div>
 
    <div class="feed-group">
     <p class="feed-group-title">🐓 CÁM GÀ TRỐNG</p>
@@ -541,7 +540,6 @@ user-select: none !important;
   <strong id="rFeed2" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">0 bao (0 kg)</strong>
 </div>
 </div>
-   </div>
 
    <div class="divider"></div>
    <p class="subhead">TỔNG CÁM NHẬP TỪ ĐẦU ĐÀN</p>
@@ -1633,13 +1631,14 @@ async function exportPDF() {
       } else {
         cp.value = el.value;
         cp.setAttribute('value', el.value);
-        if (el.tagName === 'TEXTAREA') cp.textContent = el.value;
+        if (el.tagName === 'TEXTAREA') {
+          cp.textContent = el.value;
+        }
       }
     });
     clone.querySelectorAll(
-      'button,.no-print,.actions,#history,.photo-viewer,.photo-buttons'
+      'button,.no-print,.actions,#history,.photo-viewer,.photo-buttons,input[type="file"]'
     ).forEach(el => el.remove());
-    clone.querySelectorAll('input[type="file"]').forEach(el => el.remove());
     const width = Math.ceil(Math.max(
       source.getBoundingClientRect().width,
       source.scrollWidth,
@@ -1661,10 +1660,19 @@ async function exportPDF() {
     clone.style.setProperty('position', 'relative', 'important');
     clone.style.setProperty('transform', 'none', 'important');
     clone.style.setProperty('box-shadow', 'none', 'important');
+    clone.style.setProperty('filter', 'none', 'important');
+    clone.style.setProperty('opacity', '1', 'important');
+    clone.style.setProperty('color', '#111', 'important');
+    clone.style.setProperty('background-color', '#fff', 'important');
     clone.querySelectorAll('*').forEach(el => {
       el.style.setProperty('max-height', 'none', 'important');
       el.style.setProperty('animation', 'none', 'important');
       el.style.setProperty('transition', 'none', 'important');
+      el.style.setProperty('text-shadow', 'none', 'important');
+      el.style.setProperty('filter', 'none', 'important');
+      el.style.setProperty('opacity', '1', 'important');
+      el.style.setProperty('print-color-adjust', 'exact');
+      el.style.setProperty('-webkit-print-color-adjust', 'exact');
     });
     clone.querySelectorAll('.photo-list').forEach(el => {
       el.style.setProperty('display', 'flex', 'important');
@@ -1687,7 +1695,6 @@ async function exportPDF() {
         requestAnimationFrame(resolve)
       )
     );
-    // Chờ ảnh tải xong, không để một ảnh lỗi làm treo vô hạn.
     for (const img of clone.querySelectorAll('img')) {
       img.removeAttribute('loading');
       if (!img.complete) {
@@ -1705,7 +1712,9 @@ async function exportPDF() {
         });
       }
       if (img.decode) {
-        try { await img.decode(); } catch (_) {}
+        try {
+          await img.decode();
+        } catch (_) {}
       }
     }
     await new Promise(resolve =>
@@ -1713,7 +1722,6 @@ async function exportPDF() {
         requestAnimationFrame(resolve)
       )
     );
-    // Đo toàn bộ chiều cao sau khi nội dung đã hiển thị.
     const rect = clone.getBoundingClientRect();
     const pxWidth = Math.ceil(Math.max(
       clone.scrollWidth,
@@ -1726,11 +1734,6 @@ async function exportPDF() {
       clone.offsetHeight,
       rect.height
     ));
-    console.log('PDF dimensions:', {
-      pxWidth,
-      pxHeight,
-      imageCount: clone.querySelectorAll('img').length
-    });
     if (pxWidth <= 0 || pxHeight <= 0) {
       throw new Error('Không đo được kích thước báo cáo.');
     }
@@ -1739,27 +1742,26 @@ async function exportPDF() {
     const pdfHeight = pxHeight * mmPerPx;
     if (pdfWidth > 5000 || pdfHeight > 5000) {
       throw new Error(
-        'Báo cáo vượt giới hạn kích thước một trang PDF. ' +
-        'Hãy giảm số lượng hoặc kích thước ảnh.'
+        'Báo cáo quá dài cho một trang PDF. Hãy giảm số lượng hoặc kích thước ảnh.'
       );
     }
-    // Giới hạn canvas để giảm lỗi bộ nhớ trên iPhone.
+    // Tăng độ phân giải, giới hạn bộ nhớ trên iPhone.
     const scale = Math.min(
-      1.25,
-      10000 / pxWidth,
-      10000 / pxHeight,
-      Math.sqrt(12000000 / (pxWidth * pxHeight))
+      2,
+      18000 / pxWidth,
+      18000 / pxHeight,
+      Math.sqrt(32000000 / (pxWidth * pxHeight))
     );
     if (!Number.isFinite(scale) || scale <= 0) {
       throw new Error('Kích thước báo cáo không hợp lệ.');
     }
-    btn.textContent = 'Đang dựng toàn bộ báo cáo...';
+    btn.textContent = 'Đang dựng báo cáo độ nét cao...';
     canvas = await html2canvas(clone, {
       scale,
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
-      logging: true,
+      logging: false,
       width: pxWidth,
       height: pxHeight,
       windowWidth: width,
@@ -1769,22 +1771,31 @@ async function exportPDF() {
     if (!canvas.width || !canvas.height) {
       throw new Error('Canvas rỗng, không thể tạo PDF.');
     }
-    btn.textContent = 'Đang tạo file PDF...';
+    btn.textContent = 'Đang tạo PDF PNG...';
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: [pdfWidth, pdfHeight],
-      compress: true
+      compress: true,
+      hotfixes: ['px_scaling']
     });
-    const imageData = canvas.toDataURL('image/jpeg', 0.82);
+    // PNG không gây mờ thêm do nén JPEG.
+    const imageData = canvas.toDataURL('image/png');
     if (!imageData || imageData === 'data:,') {
       throw new Error('Không chuyển được báo cáo thành ảnh.');
     }
     pdf.addImage(
-      imageData, 'JPEG', 0, 0,
-      pdfWidth, pdfHeight, undefined, 'FAST'
+      imageData,
+      'PNG',
+      0,
+      0,
+      pdfWidth,
+      pdfHeight,
+      undefined,
+      'SLOW'
     );
+    // Giải phóng bộ nhớ sau khi ảnh đã được nhúng vào PDF.
     canvas.width = 1;
     canvas.height = 1;
     canvas = null;
@@ -1802,7 +1813,10 @@ async function exportPDF() {
     if (navigator.share && navigator.canShare) {
       try {
         if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: filename });
+          await navigator.share({
+            files: [file],
+            title: filename
+          });
           shared = true;
         }
       } catch (e) {
