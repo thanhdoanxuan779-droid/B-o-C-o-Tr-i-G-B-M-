@@ -1379,32 +1379,42 @@ async function exportPDF() {
   if (busy) return;
 
   const btn = document.querySelector('#pdfBtn');
-  if (!btn) return;
+  const source = document.querySelector('.content');
+  if (!btn || !source) {
+    alert('Không tìm thấy nội dung báo cáo.');
+    return;
+  }
 
   const oldText = btn.textContent;
-  let win = null;
+  let stage = null;
 
   try {
     busy = true;
     btn.disabled = true;
-    btn.textContent = 'Đang chuẩn bị báo cáo...';
+    btn.textContent = 'Đang tạo file PDF...';
 
-    const source = document.querySelector('.content');
-    if (!source) {
-      throw new Error('Không tìm thấy nội dung báo cáo.');
-    }
-
-    // Mở cửa sổ in ngay khi người dùng bấm nút
-    win = window.open('', '_blank');
-    if (!win) {
-      throw new Error('Hãy cho phép trình duyệt mở cửa sổ bật lên.');
+    // Nạp thư viện tạo PDF trực tiếp, không mở hộp thoại in
+    if (!window.html2pdf) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src =
+          'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        script.onload = resolve;
+        script.onerror = () =>
+          reject(new Error('Không tải được thư viện PDF. Kiểm tra mạng rồi thử lại.'));
+        document.head.appendChild(script);
+      });
     }
 
     const clone = source.cloneNode(true);
 
-    // Sao chép chính xác giá trị hiện tại của tất cả ô nhập
-    const originals = source.querySelectorAll('input, select, textarea');
-    const copies = clone.querySelectorAll('input, select, textarea');
+    // Sao chép dữ liệu mới nhất của mọi ô nhập
+    const originals = source.querySelectorAll(
+      'input, select, textarea'
+    );
+    const copies = clone.querySelectorAll(
+      'input, select, textarea'
+    );
 
     originals.forEach((el, i) => {
       const cp = copies[i];
@@ -1417,13 +1427,7 @@ async function exportPDF() {
 
       if (el.type === 'checkbox' || el.type === 'radio') {
         cp.checked = el.checked;
-
-        if (el.checked) {
-          cp.setAttribute('checked', 'checked');
-        } else {
-          cp.removeAttribute('checked');
-        }
-
+        cp.toggleAttribute('checked', el.checked);
         cp.classList.toggle('pdf-filled', el.checked);
         cp.classList.toggle('pdf-empty', !el.checked);
         return;
@@ -1431,7 +1435,6 @@ async function exportPDF() {
 
       if (el.tagName === 'SELECT') {
         cp.value = el.value;
-
         Array.from(cp.options).forEach(option => {
           option.selected = option.value === el.value;
         });
@@ -1444,235 +1447,65 @@ async function exportPDF() {
         }
       }
 
-      const value = String(el.value || '').trim();
+      const filled = String(el.value || '').trim() !== '';
+      cp.classList.toggle('pdf-filled', filled);
+      cp.classList.toggle('pdf-empty', !filled);
 
-      cp.classList.toggle('pdf-filled', value !== '');
-      cp.classList.toggle('pdf-empty', value === '');
-
-      if (!value) {
-        cp.removeAttribute('placeholder');
-      }
+      if (!filled) cp.removeAttribute('placeholder');
     });
 
-    // Lấy ảnh trong báo cáo để bổ sung vào cuối bản in
-    const imageSelectors = [
-      '.photo-item img',
-      '.photo-card img',
-      '.photo-box img',
-      '#photos img',
-      '.photos img',
-      '[data-photo] img'
-    ];
+    // Dựng vùng xuất PDF ngoài màn hình nhưng vẫn cho trình duyệt render
+    stage = document.createElement('div');
+    stage.style.cssText = [
+      'position:fixed',
+      'left:-20000px',
+      'top:0',
+      'z-index:-1',
+      'background:#fff',
+      'overflow:visible',
+      'height:auto',
+      'max-height:none',
+      'transform:none'
+    ].join(';');
 
-    let photoImages = [
-      ...new Set(
-        imageSelectors.flatMap(selector =>
-          Array.from(source.querySelectorAll(selector))
-        )
-      )
-    ];
+    const width = Math.max(
+      source.getBoundingClientRect().width,
+      source.scrollWidth,
+      320
+    );
 
-    // Nếu HTML dùng cấu trúc ảnh khác, lấy ảnh trong vùng báo cáo
-    if (!photoImages.length) {
-      photoImages = Array.from(source.querySelectorAll('img'))
-        .filter(img =>
-          img.closest('#photos, .photos, .photo-list, .photo-grid')
-        );
-    }
+    stage.style.width = width + 'px';
 
-    const photos = photoImages
-      .map(img => ({
-        src: img.currentSrc || img.src,
-        alt: img.alt || ''
-      }))
-      .filter(photo => photo.src);
+    // Giữ nguyên nội dung, không tách riêng ảnh và không xóa mục báo cáo
+    clone.style.setProperty('width', width + 'px', 'important');
+    clone.style.setProperty('max-width', 'none', 'important');
+    clone.style.setProperty('height', 'auto', 'important');
+    clone.style.setProperty('max-height', 'none', 'important');
+    clone.style.setProperty('overflow', 'visible', 'important');
+    clone.style.setProperty('transform', 'none', 'important');
+    clone.style.setProperty('box-shadow', 'none', 'important');
 
-    // Giữ CSS của app để không làm mất các trường dữ liệu và bố cục
-    const styles = Array.from(document.querySelectorAll('style'))
-      .map(el => el.outerHTML)
-      .join('\n');
+    // Ẩn nút thao tác, giữ lại toàn bộ thông tin báo cáo
+    clone.querySelectorAll(
+      'button, .no-print, .actions, #history, .photo-viewer, .photo-buttons'
+    ).forEach(el => el.remove());
 
-    const links = Array.from(
-      document.querySelectorAll('link[rel="stylesheet"]')
-    )
-      .map(el => el.outerHTML)
-      .join('\n');
+    clone.querySelectorAll('input[type="file"]').forEach(el => el.remove());
 
-    win.document.open();
-    win.document.write(`<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BÁO CÁO TRẠI GÀ BỐ MẸ</title>
-${links}
-${styles}
-<style>
-* {
-  box-sizing: border-box !important;
-}
+    stage.appendChild(clone);
+    document.body.appendChild(stage);
 
-html, body {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: auto !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-  background: #fff !important;
-  color: #111 !important;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
-}
+    // Đảm bảo ảnh giữ đúng tỷ lệ và không bị giới hạn chiều cao
+    clone.querySelectorAll('img').forEach(img => {
+      img.style.setProperty('max-width', '100%', 'important');
+      img.style.setProperty('max-height', 'none', 'important');
+      img.style.setProperty('height', 'auto', 'important');
+      img.style.setProperty('object-fit', 'contain', 'important');
+    });
 
-#printRoot {
-  display: block !important;
-  width: 100% !important;
-  height: auto !important;
-  overflow: visible !important;
-}
-
-.content {
-  width: 100% !important;
-  max-width: none !important;
-  min-width: 0 !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-  margin: 0 !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-/* Không ẩn các phần báo cáo, không ép mục báo cáo sang trang mới */
-.card, .card-body, .grid, .field, form, #reportForm,
-.summary, .feed-group, .feed-total-group {
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-  break-before: auto !important;
-  break-after: auto !important;
-  break-inside: auto !important;
-  page-break-before: auto !important;
-  page-break-after: auto !important;
-  page-break-inside: auto !important;
-}
-
-/* Ô có dữ liệu: tô nền nhẹ; ô trống: bỏ khung */
-input.pdf-filled, select.pdf-filled, textarea.pdf-filled {
-  color: #111 !important;
-  background: #eef8ee !important;
-  border: 1px solid #6b9b73 !important;
-  opacity: 1 !important;
-  -webkit-text-fill-color: #111 !important;
-}
-
-input.pdf-empty, select.pdf-empty, textarea.pdf-empty {
-  color: transparent !important;
-  background: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-textarea.pdf-empty {
-  resize: none !important;
-}
-
-/* Giữ ảnh nguyên tỷ lệ, không cắt bằng chiều cao cố định */
-.content img,
-.pdf-photo-page img {
-  display: block !important;
-  width: auto !important;
-  height: auto !important;
-  max-width: 100% !important;
-  max-height: none !important;
-  object-fit: contain !important;
-  object-position: center !important;
-}
-
-/* Ảnh nối tiếp nhau, không chèn trang A4 trống */
-.pdf-photo-page {
-  display: block !important;
-  width: 100% !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  margin: 4mm 0 !important;
-  padding: 0 !important;
-  overflow: visible !important;
-  break-before: auto !important;
-  break-after: auto !important;
-  page-break-before: auto !important;
-  page-break-after: auto !important;
-}
-
-.pdf-photo-page img {
-  max-width: 100% !important;
-  margin: 0 auto !important;
-}
-
-.pdf-photo-caption {
-  margin-top: 2mm !important;
-  font-size: 10pt !important;
-  text-align: center !important;
-  overflow-wrap: anywhere !important;
-}
-
-/* Chỉ ẩn nút điều khiển, không ẩn nội dung báo cáo */
-button, .no-print, .actions, #history,
-.footer, .photo-viewer, .photo-buttons {
-  display: none !important;
-}
-
-input[type="file"] {
-  display: none !important;
-}
-
-/* Không khóa giấy ở A4: tránh ép báo cáo dài vào nhiều khung cố định */
-@page {
-  size: auto;
-  margin: 8mm;
-}
-</style>
-</head>
-<body>
-<div id="printRoot"></div>
-</body>
-</html>`);
-    win.document.close();
-
-    const root = win.document.getElementById('printRoot');
-    root.appendChild(win.document.importNode(clone, true));
-
-    // Bổ sung bản ảnh nguyên tỷ lệ vào cuối báo cáo
-    for (const photo of photos) {
-      const page = win.document.createElement('section');
-      page.className = 'pdf-photo-page';
-
-      const img = win.document.createElement('img');
-      img.src = photo.src;
-      img.alt = photo.alt;
-      img.loading = 'eager';
-
-      page.appendChild(img);
-
-      if (photo.alt) {
-        const caption = win.document.createElement('div');
-        caption.className = 'pdf-photo-caption';
-        caption.textContent = photo.alt;
-        page.appendChild(caption);
-      }
-
-      root.appendChild(page);
-    }
-
-    // Chờ ảnh tải xong trước khi mở hộp thoại in
+    // Chờ ảnh tải xong
     await Promise.all(
-      Array.from(root.querySelectorAll('img')).map(async img => {
+      Array.from(clone.querySelectorAll('img')).map(async img => {
         img.removeAttribute('loading');
 
         if (!img.complete) {
@@ -1683,7 +1516,7 @@ input[type="file"] {
           });
         }
 
-        if (typeof img.decode === 'function') {
+        if (img.decode) {
           try {
             await img.decode();
           } catch (_) {}
@@ -1691,23 +1524,86 @@ input[type="file"] {
       })
     );
 
-    // Chờ trình duyệt tính xong bố cục trước khi in
-    await new Promise(resolve => setTimeout(resolve, 700));
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(resolve)
+      )
+    );
 
-    btn.textContent = 'Đang mở bản in...';
-    win.focus();
-    win.print();
+    // Tạo một trang PDF dài thay vì chia thành nhiều trang A4
+    const pxWidth = Math.max(clone.scrollWidth, width);
+    const pxHeight = Math.max(
+      clone.scrollHeight,
+      clone.getBoundingClientRect().height
+    );
+
+    if (!pxHeight || !pxWidth) {
+      throw new Error('Báo cáo chưa hiển thị được nội dung.');
+    }
+
+    // Đổi kích thước từ pixel CSS sang mm
+    const mmPerPx = 25.4 / 96;
+    const pdfWidth = pxWidth * mmPerPx;
+    const pdfHeight = pxHeight * mmPerPx;
+
+    // Giới hạn kỹ thuật của kích thước trang PDF
+    if (pdfHeight > 15000 || pdfWidth > 15000) {
+      throw new Error(
+        'Báo cáo quá dài để tạo một trang PDF. Hãy xuất thành nhiều phần.'
+      );
+    }
+
+    const dateInput = document.querySelector('#date');
+    const dateText = dateInput && dateInput.value
+      ? dateInput.value
+      : new Date().toISOString().slice(0, 10);
+
+    const options = {
+      margin: 0,
+      filename: 'Bao-cao-trai-ga-' + dateText + '.pdf',
+      image: {
+        type: 'jpeg',
+        quality: 1
+      },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: pxWidth,
+        height: pxHeight,
+        windowWidth: pxWidth,
+        scrollX: 0,
+        scrollY: 0
+      },
+      jsPDF: {
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight],
+        orientation: 'portrait',
+        compress: true,
+        hotfixes: ['px_scaling']
+      },
+      pagebreak: {
+        mode: []
+      }
+    };
+
+    btn.textContent = 'Đang tạo PDF...';
+
+    await window.html2pdf()
+      .set(options)
+      .from(clone)
+      .save();
 
   } catch (error) {
     console.error('PDF export error:', error);
-
-    if (win && !win.closed) {
-      win.close();
-    }
-
-    alert('Không xuất được PDF: ' +
-      (error.message || 'Lỗi xử lý báo cáo.'));
+    alert(
+      'Không tạo được PDF: ' +
+      (error.message || 'Lỗi xử lý báo cáo.')
+    );
   } finally {
+    if (stage) stage.remove();
     busy = false;
     btn.disabled = false;
     btn.textContent = oldText;
