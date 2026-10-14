@@ -1375,7 +1375,7 @@ await api('/api/reports',{
 
 
 
-/* PDF: PHAN CHU LIEN MACH, MOI ANH MOT TRANG */
+/* PDF: BAO CAO LIEN MACH - MOI ANH MOT TRANG, KHONG CAT ANH */
 async function exportPDF() {
   if (busy) return;
 
@@ -1383,7 +1383,7 @@ async function exportPDF() {
   if (!btn) return;
 
   const oldText = btn.textContent;
-  let printWindow = null;
+  let win = null;
 
   try {
     busy = true;
@@ -1393,18 +1393,19 @@ async function exportPDF() {
     const source = document.querySelector('.content');
     if (!source) throw new Error('Không tìm thấy nội dung báo cáo.');
 
-    printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      throw new Error('Hãy cho phép trình duyệt mở cửa sổ bật lên rồi thử lại.');
+    win = window.open('', '_blank');
+    if (!win) {
+      throw new Error('Hãy cho phép trình duyệt mở cửa sổ bật lên.');
     }
 
     const clone = source.cloneNode(true);
 
-    const oldFields = source.querySelectorAll('input,select,textarea');
-    const newFields = clone.querySelectorAll('input,select,textarea');
+    // Đồng bộ giá trị đang nhập.
+    const originals = source.querySelectorAll('input,select,textarea');
+    const copies = clone.querySelectorAll('input,select,textarea');
 
-    oldFields.forEach((el, i) => {
-      const cp = newFields[i];
+    originals.forEach((el, i) => {
+      const cp = copies[i];
       if (!cp) return;
 
       if (el.type === 'file') {
@@ -1429,8 +1430,8 @@ async function exportPDF() {
       '.no-print,.actions,#history,.footer,.photo-viewer,.photo-buttons'
     ).forEach(el => el.remove());
 
-    // Tách các ảnh minh chứng khỏi phần chữ.
-    const photoSelectors = [
+    // Tìm từng ảnh minh chứng.
+    const selectors = [
       '.photo-item img',
       '.photo-card img',
       '.photo-box img',
@@ -1439,55 +1440,34 @@ async function exportPDF() {
       '[data-photo] img'
     ];
 
-    const photoImages = Array.from(
-      new Set(
-        photoSelectors.flatMap(selector =>
-          Array.from(clone.querySelectorAll(selector))
-        )
-      )
-    );
+    const found = [...new Set(
+      selectors.flatMap(s => [...clone.querySelectorAll(s)])
+    )];
 
-    const photoPages = photoImages.map(img => {
-      const page = printWindow.document.createElement('div');
-      page.className = 'photo-print-page';
+    // Lưu ảnh thành trang riêng; không giới hạn tỉ lệ ảnh.
+    const photoData = found.map(img => {
+      const src = img.currentSrc || img.src;
+      const alt = img.alt || '';
+      const parent = img.closest('.photo-item,.photo-card,.photo-box')
+        || img.parentElement;
 
-      const image = img.cloneNode(true);
-      image.removeAttribute('loading');
-
-      page.appendChild(image);
-
-      const caption = img.alt || img.getAttribute('data-caption') || '';
-      if (caption) {
-        const text = printWindow.document.createElement('div');
-        text.className = 'photo-caption';
-        text.textContent = caption;
-        page.appendChild(text);
+      if (parent) {
+        const note = win.document.createElement('p');
+        note.className = 'photo-note';
+        note.textContent = 'Ảnh minh chứng ở trang riêng phía sau báo cáo.';
+        parent.replaceWith(note);
       }
 
-      // Thay ảnh trong phần chữ bằng chú thích, tránh chen ảnh vào báo cáo.
-      const originalParent = img.closest(
-        '.photo-item,.photo-card,.photo-box'
-      ) || img.parentElement;
-
-      if (originalParent) {
-        const note = printWindow.document.createElement('p');
-        note.className = 'photo-reference';
-        note.textContent = 'Ảnh minh chứng xem ở trang riêng.';
-        originalParent.replaceWith(note);
-      }
-
-      return page;
+      return { src, alt };
     });
 
-    // Loại bỏ CSS ngoài có thể gây co trang, giữ CSS app.
-    const styles = Array.from(document.querySelectorAll('style'))
+    const styles = [...document.querySelectorAll('style')]
+      .map(s => s.outerHTML).join('\n');
+    const links = [...document.querySelectorAll('link[rel="stylesheet"]')]
       .map(s => s.outerHTML).join('\n');
 
-    const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-      .map(s => s.outerHTML).join('\n');
-
-    printWindow.document.open();
-    printWindow.document.write(`<!DOCTYPE html>
+    win.document.open();
+    win.document.write(`<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -1496,16 +1476,16 @@ async function exportPDF() {
 ${links}
 ${styles}
 <style>
-@page { size: A4 portrait; margin: 9mm; }
+@page { size: A4 portrait; margin: 7mm; }
 * { box-sizing: border-box !important; }
 html, body {
-  background: #fff !important;
-  color: #111 !important;
   margin: 0 !important;
   padding: 0 !important;
   width: auto !important;
   height: auto !important;
   overflow: visible !important;
+  background: #fff !important;
+  color: #111 !important;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -1516,59 +1496,71 @@ html, body {
   min-width: 0 !important;
   height: auto !important;
   max-height: none !important;
-  overflow: visible !important;
   margin: 0 !important;
   padding: 0 !important;
-  box-shadow: none !important;
+  overflow: visible !important;
   transform: none !important;
+  box-shadow: none !important;
 }
 input, select, textarea {
+  max-width: 100% !important;
   color: #111 !important;
   background: #fff !important;
   opacity: 1 !important;
   -webkit-text-fill-color: #111 !important;
-  max-width: 100% !important;
 }
 textarea { white-space: pre-wrap !important; }
 button, .no-print, .actions, #history, .footer,
 .photo-viewer, .photo-buttons { display: none !important; }
 
-/* Phần chữ được phép chảy tự nhiên qua các trang. */
+/* Không ép cả khối lớn nằm trên một trang gây khoảng trắng. */
 .card, .card-body, .grid, .field, form, #reportForm, .summary {
-  overflow: visible !important;
+  height: auto !important;
   max-height: none !important;
+  overflow: visible !important;
   break-inside: auto !important;
   page-break-inside: auto !important;
+  margin-bottom: 3mm !important;
 }
-.photo-reference { font-size: 10pt; color: #555; }
+.photo-note {
+  margin: 2mm 0 !important;
+  padding: 0 !important;
+  font-size: 9pt !important;
+  color: #555 !important;
+}
 
-/* Mỗi ảnh minh chứng một trang riêng, phóng lớn tối đa. */
+/* Ảnh sát nhau, mỗi ảnh một trang riêng, không crop. */
 .photo-print-page {
-  break-before: page;
-  page-break-before: always;
-  break-after: page;
-  page-break-after: always;
-  width: 100%;
-  height: 275mm;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
+  page-break-before: always !important;
+  break-before: page !important;
+  page-break-after: always !important;
+  break-after: page !important;
+  width: 100% !important;
+  height: 282mm !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  overflow: visible !important;
 }
 .photo-print-page img {
   display: block !important;
   width: auto !important;
   height: auto !important;
   max-width: 100% !important;
-  max-height: 245mm !important;
+  max-height: 270mm !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
   object-fit: contain !important;
 }
 .photo-caption {
-  margin-top: 8mm;
-  text-align: center;
-  font-size: 12pt;
-  color: #222;
+  margin: 2mm 0 0 !important;
+  padding: 0 !important;
+  font-size: 10pt !important;
+  text-align: center !important;
 }
 @media print {
   html, body { overflow: visible !important; }
@@ -1577,22 +1569,41 @@ button, .no-print, .actions, #history, .footer,
 </head>
 <body><div id="printRoot"></div></body>
 </html>`);
-    printWindow.document.close();
+    win.document.close();
 
-    const root = printWindow.document.getElementById('printRoot');
-    root.appendChild(printWindow.document.importNode(clone, true));
+    const root = win.document.getElementById('printRoot');
+    root.appendChild(win.document.importNode(clone, true));
 
-    // Ảnh minh chứng thành các trang riêng ở cuối PDF.
-    photoPages.forEach(page => root.appendChild(page));
+    // Tạo các trang ảnh sau phần báo cáo.
+    photoData.forEach(({src, alt}) => {
+      const page = win.document.createElement('section');
+      page.className = 'photo-print-page';
 
-    const imgs = Array.from(root.querySelectorAll('img'));
-    await Promise.all(imgs.map(async img => {
+      const img = win.document.createElement('img');
+      img.src = src;
+      img.alt = alt;
+      img.removeAttribute('loading');
+
+      page.appendChild(img);
+
+      if (alt) {
+        const caption = win.document.createElement('div');
+        caption.className = 'photo-caption';
+        caption.textContent = alt;
+        page.appendChild(caption);
+      }
+
+      root.appendChild(page);
+    });
+
+    // Đợi ảnh sẵn sàng trước khi in.
+    await Promise.all([...root.querySelectorAll('img')].map(async img => {
       img.removeAttribute('loading');
 
       if (!img.complete) {
         await new Promise(resolve => {
-          img.addEventListener('load', resolve, { once: true });
-          img.addEventListener('error', resolve, { once: true });
+          img.addEventListener('load', resolve, {once:true});
+          img.addEventListener('error', resolve, {once:true});
           setTimeout(resolve, 10000);
         });
       }
@@ -1602,20 +1613,17 @@ button, .no-print, .actions, #history, .footer,
       }
     }));
 
-    btn.textContent = 'Đang mở bản in PDF…';
-    printWindow.focus();
+    btn.textContent = 'Đang mở bản in…';
+    win.focus();
 
     setTimeout(() => {
-      try {
-        printWindow.print();
-      } catch (err) {
-        alert('Không mở được chức năng in PDF.');
-      }
-    }, 500);
+      try { win.print(); }
+      catch (e) { alert('Không mở được hộp thoại in PDF.'); }
+    }, 400);
 
   } catch (e) {
     console.error('PDF export error:', e);
-    if (printWindow && !printWindow.closed) printWindow.close();
+    if (win && !win.closed) win.close();
     alert('Không xuất được PDF: ' + (e.message || 'Lỗi xử lý báo cáo.'));
   } finally {
     busy = false;
