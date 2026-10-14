@@ -246,7 +246,6 @@ pointer-events: none !important;
 user-select: none !important;
 }
 
-
 </style>
 </head>
 <body>
@@ -2028,6 +2027,31 @@ $('#photos').addEventListener('change', async e => {
     input.disabled = false;
   }
 });
+/* CHẶN KÉO VƯỢT ĐẦU / CUỐI TRANG */
+(function preventPageBounce() {
+  const page = document.documentElement;
+  const body = document.body;
+  page.style.overscrollBehavior = 'none';
+  body.style.overscrollBehavior = 'none';
+  let lastY = 0;
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    lastY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchmove', function (e) {
+    if (e.touches.length !== 1) return;
+    const y = e.touches[0].clientY;
+    const dy = y - lastY;
+    lastY = y;
+    const scroller = document.scrollingElement || page;
+    const maxScroll = scroller.scrollHeight - window.innerHeight;
+    const top = scroller.scrollTop <= 0;
+    const bottom = scroller.scrollTop >= maxScroll - 1;
+    if ((top && dy > 0) || (bottom && dy < 0)) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+})();
 })();
 </script>
 </body>
