@@ -1591,10 +1591,25 @@ async function exportPDF() {
 
     btn.textContent = 'Đang tạo PDF...';
 
-    await window.html2pdf()
-      .set(options)
-      .from(clone)
-      .save();
+ 
+const worker = window.html2pdf()
+  .set(options)
+  .from(clone);
+
+const pdf = await worker.toPdf().get('pdf');
+const blob = pdf.output('blob');
+const url = URL.createObjectURL(blob);
+
+const a = document.createElement('a');
+a.href = url;
+a.download = options.filename;
+a.style.display = 'none';
+
+document.body.appendChild(a);
+a.click();
+a.remove();
+
+setTimeout(() => URL.revokeObjectURL(url), 60000);
 
   } catch (error) {
     console.error('PDF export error:', error);
