@@ -89,14 +89,27 @@ textarea{min-height:76px;resize:vertical}
 .worker-count{font-size:11px;color:var(--muted);margin-top:8px}
 @media(min-width:500px){.content{padding:16px}.summary{grid-template-columns:repeat(4,minmax(0,1fr))}.stat strong{font-size:20px}}
 @media(max-width:370px){.header{padding:18px 12px}h1{font-size:17px}.tag{font-size:10px}.content{padding:9px}.card-body{padding:11px}.grid{gap:9px}.feed-group,.feed-total-group{padding:9px}.feed-total-grid{gap:7px}.feed-total-grid label{font-size:10px}.actions{padding:8px;gap:6px;margin-left:9px;margin-right:9px}.btn{font-size:12px}.worker-fields{grid-template-columns:minmax(0,1fr)}}
-@media print{body{background:white;font-size:11px}.app{max-width:none}.header{background:white!important;color:#111;padding:8px 0;border-radius:0}.header p{color:#333;opacity:1}.content{padding:5px 0}.summary{grid-template-columns:repeat(4,1fr)}.stat,.card{break-inside:avoid;border-color:#ccc}.actions,.no-print,.footer,.draft-status,.add-worker,.remove-worker{display:none!important}input,select,textarea{background:white;border-color:transparent;padding:3px 0;box-shadow:none!important}textarea{min-height:35px}.card-head{padding:8px}.card-body{padding:8px}.result{padding:5px}.feed-group,.feed-total-group{break-inside:avoid}}
-input[name="feedStart"],
-input[name="feed2Start"] {
-  pointer-events: none !important;
-  -webkit-user-select: none !important;
-  user-select: none !important;
-  background: #eee !important;
-  color: #666 !important;
+@media print{body{background:white;font-size:11px}.app{max-width:none}.header{background:white!important;color:#111;padding:8px 0;border-radius:0}.header p{color:#333;opacity:1}.content{padding:5px 0}.summary{grid-template-columns:repeat(4,1fr)}.stat,.card{break-inside:avoid;border-color:#ccc}.actions,.no-print,.footer,.draft-status,.add-worker,.remove-worker{display:none!important}input,select,textarea{background:white;border-color:transparent;padding:3px 0;box-shadow:none!important}textarea{min-height:35px}.card-head{padding:8px}.card-body{padding:8px}.result{padding:5px}
+/* ÉP TẤT CẢ Ô CHỈ ĐỌC HIỆN NỀN XÁM */
+html body input[readonly],
+html body input:disabled,
+html body textarea[readonly],
+html body textarea:disabled,
+html body input[name=“feedStart”],
+html body input[name=“feed2Start”] {
+-webkit-appearance: none !important;
+appearance: none !important;
+background: #cccccc !important;
+background-color: #cccccc !important;
+background-image: none !important;
+color: #555555 !important;
+-webkit-text-fill-color: #555555 !important;
+border: 1px solid #999999 !important;
+box-shadow: inset 0 0 0 1000px #cccccc !important;
+opacity: 1 !important;
+pointer-events: none !important;
+-webkit-user-select: none !important;
+user-select: none !important;
 }
 </style>
 </head>
@@ -205,10 +218,30 @@ input[name="feed2Start"] {
    <p class="subhead">Bàn giao và tồn kho trứng</p>
    <div class="grid">
     <div class="field"><label>Tồn đầu (quả)</label><input name="eggStockStart" type="number" min="0" value="0" readonly style="pointer-events:none;"></div>
-    <div class="field"><label>Bàn giao kho (quả)</label><input name="eggHandover" type="number" min="0" value="0"></div>
+    <div class="field"><label>Bàn Giao Kho Lạnh (quả)</label><input name="eggHandover" type="number" min="0" value="0"></div>
    </div>
    <div class="result"><span>Tồn cuối dự kiến</span><strong id="rEggStock">0 quả</strong></div>
    <p class="note">Tồn cuối = tồn đầu + tổng trứng thu − bàn giao kho.</p>
+
+<div class="divider"></div>
+<p class="subhead">Kho lạnh trứng</p>
+<div class="grid">
+ <div class="field">
+  <label>Trứng nhập kho lạnh (quả)</label>
+  <input name="coldStoreIn" type="number" min="0" value="0" readonly>
+ </div>
+ <div class="field">
+  <label>Trứng xuất kho lạnh (quả)</label>
+  <input name="coldStoreOut" type="number" min="0" value="0">
+ </div>
+ <div class="field full">
+  <label>Tổng tồn kho lạnh (quả)</label>
+  <input name="coldStoreEnd" type="number" min="0" value="0" readonly>
+ </div>
+</div>
+<p class="note">
+ Tồn kho lạnh = tổng trứng bàn giao kho từ các ngày trước và hôm nay − tổng trứng đã xuất kho lạnh.
+</p>
    <div class="divider"></div>
    <div class="grid">
     <div class="field"><label>Tỷ lệ đẻ (%)</label><input id="rRateInput" readonly value="0%"></div>
@@ -561,6 +594,8 @@ if(todayData){
 }else{
  restoreDraft(today(),true);
 }
+ restoreColdStoreDraft(today());
+ calc();
 
  }catch(e){
   error.textContent='Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
@@ -578,6 +613,78 @@ $('#loginPassword').addEventListener('keydown',e=>{
  if(e.key==='Enter') validateLogin($('#loginPassword').value.trim());
 });
 
+const COLD_STORE_DRAFT_PREFIX='chickenFarmColdStoreDraft_';
+
+function saveColdStoreDraft(date){
+ date=String(date||$('#date').value||'').slice(0,10);
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+ try{
+  localStorage.setItem(COLD_STORE_DRAFT_PREFIX+date,JSON.stringify({
+   eggHandover:form.elements.eggHandover.value,
+   coldStoreOut:form.elements.coldStoreOut.value,
+   savedAt:Date.now()
+  }));
+ }catch(e){console.error('Không lưu được nháp kho lạnh:',e);}
+}
+
+function restoreColdStoreDraft(date){
+ date=String(date||'').slice(0,10);
+ if(!date) return false;
+ try{
+  const raw=localStorage.getItem(COLD_STORE_DRAFT_PREFIX+date);
+  if(!raw) return false;
+  const saved=JSON.parse(raw);
+  const report=(Array.isArray(reports)?reports:[]).find(r=>String(r.date||'').slice(0,10)===date);
+  const serverData=report?parseReportData(report.data):null;
+  const serverTime=Date.parse(serverData?.savedAt||report?.updatedAt||report?.updated_at||'')||0;
+  if(serverData&&serverTime>=Number(saved.savedAt||0)) return false;
+  if(saved.eggHandover!==undefined) form.elements.eggHandover.value=saved.eggHandover;
+  if(saved.coldStoreOut!==undefined) form.elements.coldStoreOut.value=saved.coldStoreOut;
+  calc();
+  return true;
+ }catch(e){console.error('Không khôi phục được nháp kho lạnh:',e);return false;}
+}
+
+function calculateColdStore(date,currentIn,currentOut){
+ const target=String(date||'').slice(0,10);
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(target)) return 0;
+ const daily=new Map();
+ (Array.isArray(reports)?reports:[]).forEach(report=>{
+  const d=String(report.date||'').slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>=target) return;
+  const data=parseReportData(report.data);
+  if(data) daily.set(d,data);
+ });
+ try{
+  for(let i=0;i<localStorage.length;i++){
+   const key=localStorage.key(i);
+   if(!key||!key.startsWith(DRAFT_PREFIX)) continue;
+   const d=key.slice(DRAFT_PREFIX.length);
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>=target||daily.has(d)) continue;
+   const data=parseReportData(localStorage.getItem(key));
+   if(data) daily.set(d,data);
+  }
+  for(let i=0;i<localStorage.length;i++){
+   const key=localStorage.key(i);
+   if(!key||!key.startsWith(COLD_STORE_DRAFT_PREFIX)) continue;
+   const d=key.slice(COLD_STORE_DRAFT_PREFIX.length);
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>=target||daily.has(d)) continue;
+   try{
+    const cold=JSON.parse(localStorage.getItem(key)||'null');
+    if(cold) daily.set(d,{eggHandover:cold.eggHandover,coldStoreOut:cold.coldStoreOut});
+   }catch(e){}
+  }
+ }catch(e){console.error('Không đọc được nháp tồn kho lạnh:',e);}
+ let total=0;
+ [...daily.entries()].sort((a,b)=>a[0].localeCompare(b[0])).forEach(([,data])=>{
+  total+=Math.max(0,Number(data.eggHandover)||0);
+  total-=Math.max(0,Number(data.coldStoreOut)||0);
+ });
+ total+=Math.max(0,Number(currentIn)||0);
+ total-=Math.max(0,Number(currentOut)||0);
+ return Math.max(0,total);
+}
+
 /* TÍNH TOÁN */
 function calc(){
 const hens=val('hensStart');
@@ -590,6 +697,20 @@ const flock=hensEnd+roostersEnd+val('flockIn')-val('flockOut');
  const rate=hens>0?eggs/hens*100:0;
  const quality=eggs>0?good/eggs*100:0;
  const eggStock=val('eggStockStart')+eggs-val('eggHandover');
+
+const coldStoreIn=val('eggHandover');
+const coldStoreOut=val('coldStoreOut');
+const coldStoreEnd=calculateColdStore(
+ $('#date').value,
+ coldStoreIn,
+ coldStoreOut
+);
+
+// Nhập kho lạnh tự động bằng bàn giao kho trứng.
+form.elements.coldStoreIn.value=coldStoreIn;
+
+// Cập nhật tổng tồn kho lạnh.
+form.elements.coldStoreEnd.value=coldStoreEnd;
 
  const feed=val('feedStart')+val('feedIn')-val('feedUsed');
  const feed2=val('feed2Start')+val('feed2In')-val('feed2Used');
@@ -620,14 +741,16 @@ setText('rFlock',fmt(flock)+' con');
    :'✓ Số trứng phân loại khớp tổng trứng thu.';
 
  $('#eggWarning').style.color=classified>eggs?'#dc3545':'#718078';
- return {flock,eggs,rate,quality,classified,eggStock,feed,feed2};
+ return {
+ flock,eggs,rate,quality,classified,eggStock,feed,feed2,
+ coldStoreIn,coldStoreOut,coldStoreEnd
+};
 }
 
 /* LẤY VÀ KHÔI PHỤC DỮ LIỆU */
 
 function getData(){
  const data={};
-
  fields.forEach(el=>{
   data[el.name]=el.type==='checkbox'?el.checked:el.value;
  });
@@ -726,20 +849,18 @@ function parseReportData(value){
  return null;
 }
 function getSavedData(date){
- const report = reports.find(
-  r => String(r.date || '').slice(0,10) === date
- );
- if(report && report.data){
-  const data = parseReportData(report.data);
-  if(data) return data;
+ const report=reports.find(r=>String(r.date||'').slice(0,10)===date);
+ const serverData=report&&report.data?parseReportData(report.data):null;
+ let localData=null;
+ try{localData=parseReportData(localStorage.getItem(DRAFT_PREFIX+date));}catch(e){}
+ if(serverData&&localData){
+  const serverTime=Date.parse(serverData.savedAt||report?.updatedAt||report?.updated_at||'')||0;
+  const localTime=Date.parse(localData.savedAt||'')||0;
+  if(localTime>serverTime) return localData;
  }
- try{
-  const raw = localStorage.getItem(DRAFT_PREFIX + date);
-  if(raw) return parseReportData(raw);
- }catch(e){}
- return null;
+ if(serverData) return serverData;
+ return localData;
 }
-
 
 function getPreviousReportData(date){
  const target=String(date||'').slice(0,10);
@@ -1087,7 +1208,8 @@ async function save(){
  const numericFields=[
   'hensStart','roostersStart','hensDead','roostersDead','hensCull','roostersCull',
   'flockIn','flockOut','egg1','egg2','egg3','eggOther','eggGood','eggDirty',
-  'eggBroken','eggOtherType','eggStockStart','eggHandover','feedStart','feedIn',
+  'eggBroken','eggOtherType','eggStockStart','eggHandover',
+'coldStoreIn','coldStoreOut','feedStart','feedIn',
   'feedUsed','feed2Start','feed2In','feed2Used','water','water2'
  ];
 
@@ -1112,6 +1234,7 @@ async function save(){
   btn.textContent='Đang lưu lên D1…';
 
   await api('/api/reports',{method:'POST',body:JSON.stringify(data)});
+  saveColdStoreDraft(data.date);
   saveLocalDraft();
   await loadHistory();
 
@@ -1126,81 +1249,169 @@ async function save(){
 }
 
 /* XUẤT PDF */
+
 async function exportPDF(){
  if(busy) return;
 
  const btn=$('#pdfBtn');
  const oldText=btn.textContent;
+ let pdfClone=null;
 
  try{
-  if(!window.html2canvas||!window.jspdf) throw new Error('Chưa tải được thư viện PDF. Kiểm tra mạng rồi tải lại trang.');
+  if(!window.html2canvas||!window.jspdf){
+   throw new Error('Chưa tải được thư viện PDF. Kiểm tra mạng rồi tải lại trang.');
+  }
 
   busy=true;
   btn.disabled=true;
   btn.textContent='Đang tạo PDF…';
 
   const source=document.querySelector('.content');
+  pdfClone=source.cloneNode(true);
 
-  const canvas=await html2canvas(source,{
-   scale:2,
-   useCORS:true,
-   backgroundColor:'#ffffff',
-   logging:false,
-   windowWidth:source.scrollWidth,
-   onclone:function(clonedDoc){
-    const clonedContent=clonedDoc.querySelector('.content');
-    clonedContent.style.width='760px';
-    clonedContent.style.maxWidth='none';
-    clonedContent.style.padding='16px';
-    clonedContent.style.background='#ffffff';
+  Object.assign(pdfClone.style,{
+   position:'fixed',
+   left:'-10000px',
+   top:'0',
+   width:'760px',
+   maxWidth:'none',
+   padding:'16px',
+   margin:'0',
+   background:'#ffffff',
+   boxSizing:'border-box',
+   height:'auto',
+   maxHeight:'none',
+   overflow:'visible',
+   zIndex:'-1'
+  });
 
-    clonedDoc.querySelectorAll('.no-print').forEach(el=>el.style.display='none');
+  // Sao chép giá trị hiện tại của các ô nhập liệu.
+  const originalFields=source.querySelectorAll('input,select,textarea');
+  const clonedFields=pdfClone.querySelectorAll('input,select,textarea');
 
-    clonedDoc.querySelectorAll('input,select,textarea').forEach(el=>{
-     if(el.type==='checkbox') el.style.accentColor='#146c43';
-     else{
-      el.style.color='#20312a';
-      el.style.backgroundColor='#ffffff';
-      el.style.boxShadow='none';
-     }
-    });
+  originalFields.forEach((el,i)=>{
+   const copy=clonedFields[i];
+   if(!copy) return;
 
-    clonedDoc.body.style.background='#ffffff';
+   if(el.type==='checkbox'||el.type==='radio'){
+    copy.checked=el.checked;
+   }else{
+    copy.value=el.value;
    }
   });
 
+  // Bỏ các nút và phần không cần in.
+  pdfClone.querySelectorAll(
+   '.no-print,.draft-status,.footer,.actions'
+  ).forEach(el=>el.remove());
+
+  pdfClone.querySelectorAll('input,select,textarea').forEach(el=>{
+   el.style.color='#20312a';
+   el.style.backgroundColor='#ffffff';
+   el.style.boxShadow='none';
+   el.style.maxWidth='100%';
+
+   if(el.type==='checkbox'){
+    el.style.accentColor='#146c43';
+   }
+  });
+
+  pdfClone.querySelectorAll(
+   '.card,.stat,.feed-group,.feed-total-group'
+  ).forEach(el=>{
+   el.style.breakInside='avoid';
+   el.style.pageBreakInside='avoid';
+  });
+
+  document.body.appendChild(pdfClone);
+
   const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+  const pdf=new jsPDF({
+   orientation:'portrait',
+   unit:'mm',
+   format:'a4',
+   compress:true
+  });
+
   const pageWidth=pdf.internal.pageSize.getWidth();
   const pageHeight=pdf.internal.pageSize.getHeight();
   const margin=8;
   const printableWidth=pageWidth-margin*2;
   const printableHeight=pageHeight-margin*2;
-  const pxPerMm=canvas.width/printableWidth;
-  const pageCanvasHeight=Math.floor(printableHeight*pxPerMm);
+  const gap=3;
 
-  let y=0;
-  let page=0;
+  let y=margin;
+  let pageHasContent=false;
 
-  while(y<canvas.height){
-   const sliceHeight=Math.min(pageCanvasHeight,canvas.height-y);
-   const pageCanvas=document.createElement('canvas');
-   pageCanvas.width=canvas.width;
-   pageCanvas.height=sliceHeight;
+  // Chia theo từng khối, tránh cắt ngang khối khi sang trang.
+  const summary=pdfClone.querySelector('.summary');
+  const formClone=pdfClone.querySelector('form');
+  const blocks=[];
 
-   const ctx=pageCanvas.getContext('2d');
-   ctx.fillStyle='#ffffff';
-   ctx.fillRect(0,0,pageCanvas.width,pageCanvas.height);
-   ctx.drawImage(canvas,0,y,canvas.width,sliceHeight,0,0,canvas.width,sliceHeight);
+  if(summary) blocks.push(summary);
 
-   const imageData=pageCanvas.toDataURL('image/jpeg',0.92);
-   const renderedHeight=sliceHeight/pxPerMm;
+  if(formClone){
+   [...formClone.children].forEach(el=>{
+    if(!el.classList.contains('no-print')){
+     blocks.push(el);
+    }
+   });
+  }
 
-   if(page>0) pdf.addPage();
+  if(!blocks.length){
+   throw new Error('Không tìm thấy nội dung báo cáo để xuất PDF.');
+  }
 
-   pdf.addImage(imageData,'JPEG',margin,margin,printableWidth,renderedHeight,undefined,'FAST');
-   y+=sliceHeight;
-   page++;
+  for(const block of blocks){
+   const canvas=await html2canvas(block,{
+    scale:2,
+    useCORS:true,
+    backgroundColor:'#ffffff',
+    logging:false,
+    windowWidth:780,
+    scrollX:0,
+    scrollY:0
+   });
+
+   if(!canvas.width||!canvas.height) continue;
+
+   let imgWidth=printableWidth;
+   let imgHeight=canvas.height*imgWidth/canvas.width;
+
+   // Khối quá cao: thu nhỏ nguyên khối để không bị cắt.
+   if(imgHeight>printableHeight){
+    const ratio=printableHeight/imgHeight;
+    imgWidth*=ratio;
+    imgHeight=printableHeight;
+   }
+
+   // Nếu không đủ chỗ, chuyển nguyên khối sang trang mới.
+   if(
+    pageHasContent &&
+    y+gap+imgHeight>pageHeight-margin
+   ){
+    pdf.addPage();
+    y=margin;
+    pageHasContent=false;
+   }
+
+   if(pageHasContent) y+=gap;
+
+   const x=margin+(printableWidth-imgWidth)/2;
+
+   pdf.addImage(
+    canvas.toDataURL('image/jpeg',0.95),
+    'JPEG',
+    x,
+    y,
+    imgWidth,
+    imgHeight,
+    undefined,
+    'FAST'
+   );
+
+   y+=imgHeight;
+   pageHasContent=true;
   }
 
   const date=$('#date').value||today();
@@ -1210,11 +1421,13 @@ async function exportPDF(){
   console.error('PDF export error:',e);
   alert('Không xuất được PDF: '+e.message);
  }finally{
+  if(pdfClone) pdfClone.remove();
   busy=false;
   btn.disabled=false;
   btn.textContent=oldText;
  }
 }
+
 
 /* TỰ LƯU NHÁP */
 fields.forEach(el=>{
@@ -1224,14 +1437,18 @@ fields.forEach(el=>{
 
  el.addEventListener('input',()=>{
   calc();
+  if(el.name==='eggHandover'||el.name==='coldStoreOut') saveColdStoreDraft($('#date').value);
   if(el.name!=='date') scheduleDraftSave();
  });
 
  el.addEventListener('change',()=>{
   if(el.name==='date'){
    restoreDraft(el.value,true);
+   restoreColdStoreDraft(el.value);
+   calc();
   }else{
    calc();
+   if(el.name==='eggHandover'||el.name==='coldStoreOut') saveColdStoreDraft($('#date').value);
    scheduleDraftSave();
   }
  });
@@ -1243,6 +1460,8 @@ $('#pdfBtn').addEventListener('click',exportPDF);
 $('#resetBtn').addEventListener('click',()=>{
  if(!confirm('Tạo báo cáo mới cho hôm nay? Nháp cũ vẫn được giữ theo từng ngày.')) return;
  restoreDraft(today(),true);
+ restoreColdStoreDraft(today());
+ calc();
  window.scrollTo({top:0,behavior:'smooth'});
 });
 
