@@ -247,6 +247,28 @@ user-select: none !important;
 }
 
 
+
+/* ===== BỐ CỤC RỘNG, GỌN VÀ AN TOÀN TRÊN ĐIỆN THOẠI ===== */
+html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;background:#fff}
+#mainApp{width:100%;max-width:none;min-height:100vh;min-height:100dvh;margin:0;padding:0 0 20px;box-sizing:border-box;background:#fff}
+.header.header{width:calc(100% - 16px)!important;max-width:none!important;margin:8px!important;border-radius:20px!important;box-sizing:border-box}
+.content{width:100%;max-width:none;margin:0;padding:0 8px;box-sizing:border-box;background:#fff}
+.content>.summary,.content>.draft-status,.content>form{width:100%;max-width:none;box-sizing:border-box}
+.card{width:100%;max-width:none;box-sizing:border-box}
+.actions{width:calc(100% - 16px)!important;max-width:none!important;margin:10px 8px 0!important;box-sizing:border-box;background:#fff}
+.card-body,.grid,.field,.feed-group,.feed-total-group,.worker-fields{min-width:0;max-width:100%}
+.card-body input,.card-body select,.card-body textarea{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important}
+.card-body input[type="number"]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-variant-numeric:tabular-nums}
+.result,.result>strong,.result>span,#rEggCumulative>div{min-width:0;overflow-wrap:anywhere}
+.result>strong{max-width:100%;font-size:clamp(12px,4vw,16px)}
+#rEggCumulative{margin-top:14px!important;row-gap:8px!important;align-items:stretch}
+#rEggCumulative>div{min-height:48px}
+#rEggCumulative>.note{grid-column:1/-1;margin:2px 0 0!important}
+.card-body label.check{display:flex;align-items:center;justify-content:flex-start;gap:9px;min-width:0;padding:10px 11px;line-height:1.4}
+.card-body label.check input[type="checkbox"]{display:block!important;flex:0 0 20px!important;width:20px!important;min-width:20px!important;max-width:20px!important;height:20px!important;min-height:20px!important;max-height:20px!important;margin:0!important;padding:0!important;accent-color:#145b3b}
+@media(min-width:500px){.content{padding:0 10px}.actions{width:calc(100% - 20px)!important;margin:12px 10px 0!important}}
+@media(max-width:420px){.header.header{width:calc(100% - 16px)!important;margin:8px!important;border-radius:18px!important}.content{padding:0 6px}.actions{width:calc(100% - 12px)!important;margin:10px 6px 0!important}}
+
 </style>
 </head>
 <body>
@@ -372,7 +394,7 @@ user-select: none !important;
     <h1>BÁO CÁO TRẠI GÀ BỐ MẸ</h1>
    </div>
   </div>
-  <span class="tag">10.003 CON</span>
+  <span class="tag" id="headerFlock">10.005 CON</span>
  </div>
  <p>📋 Báo cáo hằng ngày · Đàn gà · Trứng · Cám · Thiết bị</p>
 </header>
@@ -612,7 +634,7 @@ user-select: none !important;
    <div class="field" style="margin-top:12px"><label>Chênh lệch số liệu</label><select name="discrepancy"><option>Không</option><option>Có</option></select></div>
    <div class="field" style="margin-top:10px"><label>Giải thích chênh lệch</label><textarea name="discrepancyNote" placeholder="Ghi rõ số liệu, nguyên nhân và hướng xử lý..."></textarea></div>
    <div class="divider"></div>
-   <label>Ảnh minh chứng (bảng thu trứng / kho trứng / sự cố)</label>
+   <label for="photos">Ảnh minh chứng (bảng thu trứng / kho trứng / sự cố)</label>
    <input id="photos" type="file" accept="image/*" multiple>
    <div id="photoList" class="photo-list"></div>
 <div id="photoViewer" class="photo-viewer">
@@ -667,6 +689,7 @@ user-select: none !important;
 const WORKER_URL='https://baocaotraigabome9600con.skzfzqcdfx-08b.workers.dev';
 const PASSWORD_KEY='chickenFarmWorkerPassword';
 const DRAFT_PREFIX='chickenFarmDraft_';
+const PHOTO_DB_NAME='chickenFarmPhotoDrafts';
 const form=document.getElementById('reportForm');
 const $=s=>document.querySelector(s);
 const fields=[...form.querySelectorAll('input[name],select[name],textarea[name]')];
@@ -680,6 +703,12 @@ const today=()=>{
 };
 
 let photos=[];
+let photosDirty=false;
+let photosStoredInLocal=false;
+let photoMutationVersion=0;
+let photoRestoreToken=0;
+let photoDbPromise=null;
+let photoWriteQueue=Promise.resolve();
 let reports=[];
 let busy=false;
 let restoringDraft=false;
@@ -695,6 +724,70 @@ function statusDraft(message,color){
  const el=$('#draftStatus');
  el.textContent=message;
  el.style.color=color||'#718078';
+}
+
+function openPhotoDraftDb(){
+ if(!('indexedDB' in window)) return Promise.reject(new Error('Trình duyệt không hỗ trợ kho ảnh IndexedDB.'));
+ if(photoDbPromise) return photoDbPromise;
+ photoDbPromise=new Promise((resolve,reject)=>{
+  let request;
+  try{request=indexedDB.open(PHOTO_DB_NAME,1);}catch(e){photoDbPromise=null;reject(e);return;}
+  request.onupgradeneeded=()=>{
+   const db=request.result;
+   if(!db.objectStoreNames.contains('drafts')) db.createObjectStore('drafts',{keyPath:'date'});
+  };
+  request.onsuccess=()=>{
+   const db=request.result;
+   db.onversionchange=()=>{db.close();photoDbPromise=null;};
+   resolve(db);
+  };
+  request.onerror=()=>{photoDbPromise=null;reject(request.error||new Error('Không mở được kho ảnh.'));};
+  request.onblocked=()=>{photoDbPromise=null;reject(new Error('Kho ảnh đang bị khóa bởi tab khác.'));};
+ });
+ return photoDbPromise;
+}
+
+function savePhotoDraftRecord(date,list){
+ const clean=(Array.isArray(list)?list:[]).filter(p=>p&&typeof p.url==='string'&&p.url.startsWith('data:image/')).map(p=>({name:String(p.name||''),type:String(p.type||'image/jpeg'),url:p.url}));
+ const task=photoWriteQueue.then(async()=>{
+  const db=await openPhotoDraftDb();
+  await new Promise((resolve,reject)=>{
+   let tx;
+   try{tx=db.transaction('drafts','readwrite');}catch(e){reject(e);return;}
+   tx.objectStore('drafts').put({date:String(date),photos:clean,updatedAt:Date.now()});
+   tx.oncomplete=resolve;
+   tx.onerror=()=>reject(tx.error||new Error('Không lưu được ảnh vào IndexedDB.'));
+   tx.onabort=()=>reject(tx.error||new Error('Giao dịch lưu ảnh bị hủy.'));
+  });
+ });
+ photoWriteQueue=task.catch(()=>{});
+ return task;
+}
+
+async function readPhotoDraftRecord(date){
+ await photoWriteQueue.catch(()=>{});
+ const db=await openPhotoDraftDb();
+ return new Promise((resolve,reject)=>{
+  let tx,request;
+  try{tx=db.transaction('drafts','readonly');request=tx.objectStore('drafts').get(String(date));}
+  catch(e){reject(e);return;}
+  request.onsuccess=()=>resolve(request.result||null);
+  request.onerror=()=>reject(request.error||new Error('Không đọc được ảnh đã lưu.'));
+  tx.onerror=()=>reject(tx.error||new Error('Lỗi đọc kho ảnh.'));
+ });
+}
+
+async function restorePhotoDraft(date){
+ const token=++photoRestoreToken;
+ const version=photoMutationVersion;
+ try{
+  const record=await readPhotoDraftRecord(date);
+  if(token!==photoRestoreToken||version!==photoMutationVersion||$('#date').value!==date||!record||!Array.isArray(record.photos)) return;
+  photos=record.photos.filter(p=>p&&typeof p.url==='string'&&p.url.startsWith('data:image/'));
+  photosDirty=false;
+  photosStoredInLocal=false;
+  renderPhotos();
+ }catch(e){console.warn('Không khôi phục được ảnh minh chứng:',e);}
 }
 
 async function getPassword(){
@@ -721,55 +814,43 @@ async function api(path,options={}){
 
 
 function updateCumulativeEggs(){
-  const dates = new Set();
+  const currentDate=String($('#date').value||'').slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(currentDate)) return;
+  const dates=new Set();
 
-  (Array.isArray(reports) ? reports : []).forEach(report => {
-    const date = String(report.date || '').slice(0,10);
-    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) dates.add(date);
+  (Array.isArray(reports)?reports:[]).forEach(report=>{
+    const data=parseReportData(report?.data);
+    const date=String(report?.date||data?.date||'').slice(0,10);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(date)&&date<=currentDate) dates.add(date);
   });
 
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (!key || !key.startsWith(DRAFT_PREFIX)) continue;
-
-      const date = key.slice(DRAFT_PREFIX.length);
-      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) dates.add(date);
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(!key||!key.startsWith(DRAFT_PREFIX)) continue;
+      const date=key.slice(DRAFT_PREFIX.length);
+      if(/^\d{4}-\d{2}-\d{2}$/.test(date)&&date<=currentDate) dates.add(date);
     }
-  } catch(e) {}
+  }catch(e){console.warn('Không đọc được danh sách nháp để tính trứng lũy kế.',e);}
 
-  const currentDate = String($('#date').value || '').slice(0,10);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(currentDate)) {
-    dates.add(currentDate);
-  }
-
-  let total = 0;
-
-  dates.forEach(date => {
+  dates.add(currentDate);
+  let total=0;
+  [...dates].sort().forEach(date=>{
     let data;
-
-    if (date === currentDate) {
-      data = {
-        egg1: val('egg1'),
-        egg2: val('egg2'),
-        egg3: val('egg3'),
-        eggOther: val('eggOther')
-      };
-    } else {
-      data = getSavedData(date);
+    if(date===currentDate){
+      data={egg1:val('egg1'),egg2:val('egg2'),egg3:val('egg3'),eggOther:val('eggOther')};
+    }else{
+      data=getSavedData(date);
     }
-
-    data = parseReportData(data);
-    if (!data) return;
-
-    total += Math.max(0, Number(data.egg1) || 0);
-    total += Math.max(0, Number(data.egg2) || 0);
-    total += Math.max(0, Number(data.egg3) || 0);
-    total += Math.max(0, Number(data.eggOther) || 0);
+    data=parseReportData(data);
+    if(!data) return;
+    total+=Math.max(0,Number(data.egg1)||0)
+      +Math.max(0,Number(data.egg2)||0)
+      +Math.max(0,Number(data.egg3)||0)
+      +Math.max(0,Number(data.eggOther)||0);
   });
-
-  const el = document.getElementById('totalEggsSinceStart');
-  if (el) el.textContent = fmt(total) + ' quả';
+  const el=document.getElementById('totalEggsSinceStart');
+  if(el) el.textContent=fmt(total)+' quả';
 }
 /* TỔNG CÁM ĐÃ NHẬP TRÊN MÁY CHỦ */
 
@@ -918,35 +999,33 @@ async function validateLogin(password){
   }
 
   localStorage.setItem(PASSWORD_KEY,password);
-  $('#loginScreen').style.display='none';
-  $('#mainApp').style.display='block';
 
   renderWorkers();
 calc();
 
 // Tải báo cáo D1 trước, sau đó mới khôi phục và lấy số liệu ngày trước
-await loadHistory();
-
+const historyLoaded=await loadHistory();
 const todayData=getSavedData(today());
-
 if(todayData){
  restoreDraft(today(),false);
-}else{
+}else if(historyLoaded){
  restoreDraft(today(),true);
+}else{
+ $('#date').value=today();
+ calc();
+ statusDraft('Chưa tải được lịch sử máy chủ. Chưa tạo nháp mới để tránh ghi đè số liệu; hãy kiểm tra kết nối.','#dc3545');
 }
- 
- restoreColdStoreDraft(today());
-
- // Tính lại tồn đầu trứng sau khi tải lịch sử D1.
- const stock = getEggStockBeforeDate(today());
-
- if (stock !== null) {
-  form.elements.eggStockStart.value = stock;
- }
-
+restoreColdStoreDraft(today());
+if(historyLoaded){
+ const stock=getEggStockBeforeDate(today());
+ if(stock!==null) form.elements.eggStockStart.value=stock;
  calc();
  saveLocalDraft();
-
+}else{
+ calc();
+}
+$('#loginScreen').style.display='none';
+$('#mainApp').style.display='block';
 
  }catch(e){
   error.textContent='Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
@@ -1068,6 +1147,7 @@ form.elements.coldStoreEnd.value=coldStoreEnd;
 
  
  setText('sFlock',fmt(flock));
+ setText('headerFlock',fmt(flock)+' CON');
  setText('sEggs',fmt(eggs));
  updateCumulativeEggs();
  setText('sRate',rate.toFixed(2)+'%');
@@ -1163,12 +1243,11 @@ function setData(data){
 
  renderWorkers();
  photos=Array.isArray(data.photos)
-  ?data.photos.filter(p=>
-      p &&
-      typeof p.url==='string' &&
-      p.url.startsWith('data:image/')
-    )
+  ?data.photos.filter(p=>p&&typeof p.url==='string'&&p.url.startsWith('data:image/'))
   :[];
+ photosDirty=photos.length>0;
+ photosStoredInLocal=photos.length>0;
+ photoMutationVersion++;
 
 $('#photos').value='';
 renderPhotos();
@@ -1176,17 +1255,72 @@ renderPhotos();
 }
 
 /* LƯU NHÁP TRÊN THIẾT BỊ */
-function saveLocalDraft(){
- if(restoringDraft) return;
+async function saveLocalDraft(){
+ if(restoringDraft) return true;
  const date=$('#date').value;
- if(!date) return;
-
+ if(!date) return false;
+ let data;
+ let photoList=[];
+ let photoSavedSeparately=false;
+ let localError=null;
  try{
-  const data=getData();
-  localStorage.setItem(DRAFT_PREFIX+date,JSON.stringify(data));
-  statusDraft('✓ Nháp ngày '+date.split('-').reverse().join('/')+' đã tự lưu trên thiết bị. Chưa gửi lên D1.','#146c43');
+  data=getData();
+  photoList=(Array.isArray(data.photos)?data.photos:[]).map(p=>({name:p.name,type:p.type,url:p.url}));
+  if(photosDirty){
+   try{
+    await savePhotoDraftRecord(date,photoList);
+    photosDirty=false;
+    photosStoredInLocal=false;
+    photoSavedSeparately=true;
+   }catch(e){
+    console.warn('IndexedDB chưa lưu được ảnh; thử lưu trong nháp cục bộ.',e);
+    photosStoredInLocal=photoList.length>0;
+   }
+  }else if(photoList.length&&!photosStoredInLocal){
+   photoSavedSeparately=true;
+  }
+
+  const metadata=photoList.map(p=>({name:p.name,type:p.type}));
+  data.photos=photoSavedSeparately?metadata:(photosStoredInLocal?photoList:metadata);
+  try{localStorage.setItem(DRAFT_PREFIX+date,JSON.stringify(data));}
+  catch(e){
+   localError=e;
+   if(photoList.length&&!photoSavedSeparately){
+    try{
+     await savePhotoDraftRecord(date,photoList);
+     photoSavedSeparately=true;
+     photosDirty=false;
+     photosStoredInLocal=false;
+     data.photos=metadata;
+     localStorage.setItem(DRAFT_PREFIX+date,JSON.stringify(data));
+     localError=null;
+    }catch(idbError){console.warn('Không thể chuyển ảnh sang kho riêng:',idbError);}
+   }
+  }
+
+  if(localError){
+   if(photoSavedSeparately){
+    statusDraft('Ảnh đã lưu riêng trên thiết bị; nháp số liệu chưa lưu được vì bộ nhớ trình duyệt đã đầy.','#b25f00');
+   }else{
+    photosDirty=photoList.length>0;
+    photosStoredInLocal=false;
+    statusDraft('Ảnh vẫn giữ trên màn hình nhưng chưa lưu được. Hãy xuất PDF trước khi đóng trang hoặc giải phóng dung lượng.','#dc3545');
+   }
+   return false;
+  }
+
+  if(photoList.length&&!photoSavedSeparately){
+   photosStoredInLocal=true;
+   photosDirty=false;
+   statusDraft('✓ Nháp đã tự lưu trên thiết bị; ảnh lưu cùng nháp và có thể bị giới hạn dung lượng. Chưa gửi lên D1.','#146c43');
+  }else{
+   statusDraft('✓ Nháp ngày '+date.split('-').reverse().join('/')+' đã tự lưu trên thiết bị. Ảnh minh chứng lưu riêng; chưa gửi lên D1.','#146c43');
+  }
+  return true;
  }catch(e){
-  statusDraft('Không lưu được nháp trên thiết bị. Bộ nhớ có thể đã đầy; thử xóa bớt ảnh minh chứng.','#dc3545');
+  console.error('Lỗi lưu nháp:',e);
+  statusDraft('Không lưu được nháp trên thiết bị. Ảnh đang chọn vẫn được giữ trên màn hình; hãy xuất PDF trước khi đóng trang.','#dc3545');
+  return false;
  }
 }
 
@@ -1201,20 +1335,32 @@ function scheduleDraftSave(){
 function parseReportData(value){
  if(!value) return null;
  if(typeof value === 'string'){
-  try {
-   value = JSON.parse(value);
-  } catch(e) {
-   return null;
-  }
+  try { value = JSON.parse(value); } catch(e){ return null; }
  }
- if(value && typeof value === 'object' && !Array.isArray(value)){
-  return value;
- }
+ if(value && typeof value === 'object' && !Array.isArray(value)) return value;
  return null;
 }
+function reportDate(report){
+ const data=parseReportData(report?.data);
+ return String(report?.date||data?.date||'').slice(0,10);
+}
+function reportTimestamp(report){
+ const data=parseReportData(report?.data);
+ return Date.parse(data?.savedAt||report?.updatedAt||report?.updated_at||'')||0;
+}
+function deduplicateReports(items){
+ const byDate=new Map();
+ (Array.isArray(items)?items:[]).forEach(report=>{
+  const date=reportDate(report);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+  const previous=byDate.get(date);
+  if(!previous||reportTimestamp(report)>=reportTimestamp(previous)) byDate.set(date,report);
+ });
+ return [...byDate.entries()].sort((a,b)=>b[0].localeCompare(a[0])).map(([,report])=>report);
+}
 function getSavedData(date){
- const report=reports.find(r=>String(r.date||'').slice(0,10)===date);
- const serverData=report&&report.data?parseReportData(report.data):null;
+ const report=reports.find(r=>reportDate(r)===date);
+ const serverData=report?.data?parseReportData(report.data):null;
  let localData=null;
  try{localData=parseReportData(localStorage.getItem(DRAFT_PREFIX+date));}catch(e){}
  if(serverData&&localData){
@@ -1222,46 +1368,28 @@ function getSavedData(date){
   const localTime=Date.parse(localData.savedAt||'')||0;
   if(localTime>serverTime) return localData;
  }
- if(serverData) return serverData;
- return localData;
+ return serverData||localData;
 }
-
 function getPreviousReportData(date){
  const target=String(date||'').slice(0,10);
-
- if(!/^\d{4}-\d{2}-\d{2}$/.test(target)){
-  return null;
- }
-
- const checkDate=previousDate(target);
-
- // Ưu tiên báo cáo đã lưu trên D1.
- const report=reports.find(
-  r=>String(r.date||'').slice(0,10)===checkDate
- );
-
- if(report&&report.data){
-  const data=parseReportData(report.data);
-
-  if(data){
-   // Gắn ngày của bản ghi để xác định đúng ngày nguồn.
-   return {...data,date:checkDate};
-  }
- }
-
- // Không có báo cáo D1 thì kiểm tra nháp đúng ngày liền trước.
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(target)) return null;
+ const dates=new Set();
+ (Array.isArray(reports)?reports:[]).forEach(report=>{
+  const d=reportDate(report);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<target) dates.add(d);
+ });
  try{
-  const raw=localStorage.getItem(DRAFT_PREFIX+checkDate);
-  const data=parseReportData(raw);
-
-  if(data){
-   return {...data,date:checkDate};
+  for(let i=0;i<localStorage.length;i++){
+   const key=localStorage.key(i);
+   if(!key||!key.startsWith(DRAFT_PREFIX)) continue;
+   const d=key.slice(DRAFT_PREFIX.length);
+   if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<target) dates.add(d);
   }
- }catch(e){}
-
- return null;
+ }catch(e){console.warn('Không đọc được nháp ngày trước.',e);}
+ const previous=[...dates].sort().pop();
+ const data=previous?getSavedData(previous):null;
+ return data?{...data,date:previous}:null;
 }
-
 function previousDate(date){
  const d=new Date(date+'T12:00:00');
  d.setDate(d.getDate()-1);
@@ -1288,45 +1416,34 @@ function getEggStockEnd(data){
 function getEggStockBeforeDate(date){
  const target=String(date||'').slice(0,10);
  if(!/^\d{4}-\d{2}-\d{2}$/.test(target)) return null;
-
- const list=(Array.isArray(reports)?reports:[])
-  .map(r=>({
-   date:String(r.date||'').slice(0,10),
-   data:parseReportData(r.data)
-  }))
-  .filter(r=>
-   r.data &&
-   /^\d{4}-\d{2}-\d{2}$/.test(r.date) &&
-   r.date<target
-  )
-  .sort((a,b)=>a.date.localeCompare(b.date));
-
- if(!list.length) return null;
-
- // Khởi tạo bằng tồn đầu của báo cáo cũ nhất.
- let stock=Math.max(0,Number(list[0].data.eggStockStart||0));
-
- for(const item of list){
+ const dates=new Set();
+ (Array.isArray(reports)?reports:[]).forEach(report=>{
+  const d=reportDate(report);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<target) dates.add(d);
+ });
+ try{
+  for(let i=0;i<localStorage.length;i++){
+   const key=localStorage.key(i);
+   if(!key||!key.startsWith(DRAFT_PREFIX)) continue;
+   const d=key.slice(DRAFT_PREFIX.length);
+   if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<target) dates.add(d);
+  }
+ }catch(e){console.warn('Không đọc được nháp để tính tồn trứng.',e);}
+ const daily=[...dates].sort().map(d=>({date:d,data:getSavedData(d)})).filter(x=>x.data);
+ if(!daily.length) return null;
+ let stock=Math.max(0,Number(daily[0].data.eggStockStart)||0);
+ for(const item of daily){
   const d=item.data;
-
-  // Tồn cuối ngày = tồn đầu + trứng nhặt - bàn giao kho.
-  stock=Math.max(
-   0,
-   stock
-   +Number(d.egg1||0)
-   +Number(d.egg2||0)
-   +Number(d.egg3||0)
-   +Number(d.eggOther||0)
-   -Number(d.eggHandover||0)
-  );
+  stock=Math.max(0,stock
+   +(Number(d.egg1)||0)+(Number(d.egg2)||0)+(Number(d.egg3)||0)+(Number(d.eggOther)||0)
+   -(Number(d.eggHandover)||0));
  }
-
  return stock;
 }
 
-
 function restoreDraft(date,resetWhenMissing){
  if(!date) return false;
+ photoRestoreToken++;
 
  clearTimeout(draftTimer);
  restoringDraft=true;
@@ -1343,6 +1460,7 @@ function restoreDraft(date,resetWhenMissing){
   if(saved){
    setData(saved);
    $('#date').value=date;
+   restorePhotoDraft(date);
 
    if(prev&&!isServerReport){
     form.elements.hensStart.value=Math.max(
@@ -1409,8 +1527,12 @@ function restoreDraft(date,resetWhenMissing){
 
   form.elements.manager.value='Đoàn Xuân Thanh';
   photos=[];
+  photosDirty=false;
+  photosStoredInLocal=false;
+  photoMutationVersion++;
   $('#photos').value='';
   $('#photoList').innerHTML='';
+  restorePhotoDraft(date);
 
   form.elements.hensStart.value=9600;
   form.elements.roostersStart.value=405;
@@ -1544,41 +1666,29 @@ function renderHistory(){
 
 async function loadHistory(){
   $('#history').innerHTML='<div class="empty">Đang tải báo cáo từ máy chủ...</div>';
-
   try{
     const result=await api('/api/reports');
-    reports=Array.isArray(result.reports)?result.reports:[];
-
-    console.log('KIỂM TRA BÁO CÁO CÁM:',reports.map(report=>{
-      let data=report.data??report;
-      if(typeof data==='string'){
-        try{data=JSON.parse(data)}catch(e){data={}};
-      }
-      return {
-        date:report.date??data.date,
-        feedIn:data.feedIn,
-        feed2In:data.feed2In,
-        dataKeys:Object.keys(data||{})
-      };
-    }));
-
+    reports=deduplicateReports(result.reports);
     renderHistory();
     updateCumulativeFeed();
     updateCumulativeEggs();
+    return true;
   }catch(e){
+    reports=[];
     $('#history').innerHTML='';
     const message=document.createElement('div');
     message.className='empty';
     message.textContent='Không tải được báo cáo: '+e.message;
     $('#history').append(message);
     console.error('Lỗi tải lịch sử:',e);
+    return false;
   }
 }
-
 
 /* LƯU BÁO CÁO LÊN D1 */
 async function save(){
  if(busy) return;
+ if(typeof form.reportValidity==='function'&&!form.reportValidity()) return;
 
  const data=getData();
 
@@ -1587,6 +1697,23 @@ async function save(){
  if(data.calculated.eggStock<0){alert('Tồn trứng cuối đang âm. Kiểm tra số liệu bàn giao.');return;}
  if(data.calculated.feed<0){alert('Tồn cuối cám gà đẻ đang âm. Kiểm tra số liệu.');return;}
  if(data.calculated.feed2<0){alert('Tồn cuối cám gà trống đang âm. Kiểm tra số liệu.');return;}
+ if(val('hensDead')+val('hensCull')>val('hensStart')){
+  alert('Số mái chết và loại thải vượt quá số mái sống đầu ngày. Hãy kiểm tra lại.');
+  form.elements.hensDead.focus();return;
+ }
+ if(val('roostersDead')+val('roostersCull')>val('roostersStart')){
+  alert('Số trống chết và loại thải vượt quá số trống sống đầu ngày. Hãy kiểm tra lại.');
+  form.elements.roostersDead.focus();return;
+ }
+ const coldStoreAvailable=calculateColdStore($('#date').value,val('eggHandover'),0);
+ if(val('coldStoreOut')>coldStoreAvailable){
+  alert('Số trứng xuất kho lạnh vượt quá tồn kho hiện có ('+fmt(coldStoreAvailable)+' quả).');
+  form.elements.coldStoreOut.focus();return;
+ }
+ if(form.elements.tempMin.value!==''&&form.elements.tempMax.value!==''&&val('tempMin')>val('tempMax')){
+  alert('Nhiệt độ thấp nhất không thể cao hơn nhiệt độ cao nhất.');
+  form.elements.tempMin.focus();return;
+ }
 
  const numericFields=[
   'hensStart','roostersStart','hensDead','roostersDead','hensCull','roostersCull',
@@ -1641,6 +1768,7 @@ await api('/api/reports',{
   btn.textContent=oldText;
  }
 }
+
 
 async function exportPDF() {
   if (busy) return;
@@ -2034,6 +2162,10 @@ function renderPhotos(){
    if(!confirm('Xóa ảnh "'+photo.name+'"?')) return;
 
    photos.splice(index,1);
+   photosDirty=true;
+   photosStoredInLocal=false;
+   photoMutationVersion++;
+   photoRestoreToken++;
    renderPhotos();
    scheduleDraftSave();
   });
@@ -2077,84 +2209,112 @@ $('#photoViewerDelete').addEventListener('click',()=>{
  if(!confirm('Xóa ảnh "'+photo.name+'"?')) return;
 
  photos.splice(index,1);
+ photosDirty=true;
+ photosStoredInLocal=false;
+ photoMutationVersion++;
+ photoRestoreToken++;
  closePhotoViewer();
  renderPhotos();
  scheduleDraftSave();
 });
 
 
-function compressPhoto(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onerror = () => reject(new Error('Không đọc được ảnh ' + file.name));
-
-    reader.onload = () => {
-      const img = new Image();
-
-      img.onerror = () => reject(new Error('Ảnh không hợp lệ: ' + file.name));
-
-      img.onload = () => {
-        try {
-          const maxSide = 1200;
-          const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-          const canvas = document.createElement('canvas');
-
-          canvas.width = Math.max(1, Math.round(img.width * scale));
-          canvas.height = Math.max(1, Math.round(img.height * scale));
-
-          const ctx = canvas.getContext('2d');
-          if (!ctx) throw new Error('Không xử lý được ảnh');
-
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-          const url = canvas.toDataURL('image/jpeg', 0.65);
-
-          canvas.width = 1;
-          canvas.height = 1;
-          img.src = '';
-
-          resolve({
-            name: file.name,
-            type: 'image/jpeg',
-            url
-          });
-        } catch (err) {
-          reject(new Error('Không nén được ảnh ' + file.name));
+async function compressPhoto(file){
+  const maxBytes=20*1024*1024;
+  if(file.size>maxBytes) throw new Error('Ảnh vượt giới hạn 20 MB. Hãy giảm kích thước rồi chọn lại.');
+  const maxSide=1200;
+  if(typeof createImageBitmap==='function'){
+    let bitmap=null,canvas=null;
+    try{
+      bitmap=await createImageBitmap(file);
+      const scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+      canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+      canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+      const ctx=canvas.getContext('2d');
+      if(!ctx) throw new Error('Không tạo được vùng nén ảnh.');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      const url=canvas.toDataURL('image/jpeg',0.65);
+      if(!url||url==='data:,') throw new Error('Ảnh nén bị rỗng.');
+      return {name:file.name,type:'image/jpeg',url};
+    }catch(error){
+      console.warn('createImageBitmap không dùng được; chuyển sang đường dự phòng.',error);
+    }finally{
+      if(canvas){canvas.width=1;canvas.height=1;}
+      if(bitmap&&typeof bitmap.close==='function') bitmap.close();
+    }
+  }
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('Không đọc được ảnh '+file.name));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error('Ảnh không hợp lệ: '+file.name));
+      img.onload=()=>{
+        let canvas=null;
+        try{
+          const scale=Math.min(1,maxSide/Math.max(img.width,img.height));
+          canvas=document.createElement('canvas');
+          canvas.width=Math.max(1,Math.round(img.width*scale));
+          canvas.height=Math.max(1,Math.round(img.height*scale));
+          const ctx=canvas.getContext('2d');
+          if(!ctx) throw new Error('Không xử lý được ảnh');
+          ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+          ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          const url=canvas.toDataURL('image/jpeg',0.65);
+          if(!url||url==='data:,') throw new Error('Ảnh nén bị rỗng.');
+          resolve({name:file.name,type:'image/jpeg',url});
+        }catch(err){reject(new Error('Không nén được ảnh '+file.name));}
+        finally{
+          if(canvas){canvas.width=1;canvas.height=1;}
+          img.src='';
         }
       };
-
-      img.src = reader.result;
+      img.src=reader.result;
     };
-
     reader.readAsDataURL(file);
   });
 }
 /* CHỌN ẢNH VÀ HIỂN THỊ XEM TRƯỚC TỪNG HÀNG */
 $('#photos').addEventListener('change', async function () {
-  const files = Array.from(this.files || []);
-  if (!files.length) return;
-  const input = this;
-  try {
-    input.disabled = true;
-    for (const file of files) {
-      if (!file.type.startsWith('image/')) continue;
-      try {
-        const photo = await compressPhoto(file);
+  const files=Array.from(this.files||[]);
+  if(!files.length) return;
+  const input=this;
+  const skipped=[];
+  try{
+    input.disabled=true;
+    for(let i=0;i<files.length;i++){
+      const file=files[i];
+      const mime=String(file.type||'').toLowerCase();
+      const extensionImage=/\.(jpe?g|png|gif|webp|bmp|tiff?|heic|heif|avif)$/i.test(file.name||'');
+      if(!mime.startsWith('image/')&&!extensionImage){skipped.push(file.name||'Tệp không rõ tên');continue;}
+      statusDraft('Đang xử lý ảnh '+(i+1)+'/'+files.length+'…');
+      try{
+        const photo=await compressPhoto(file);
         photos.push(photo);
-        // Thêm ảnh vào danh sách ngay sau khi nén xong.
+        photosDirty=true;
+        photosStoredInLocal=false;
+        photoMutationVersion++;
+        photoRestoreToken++;
         renderPhotos();
-        scheduleDraftSave();
-      } catch (error) {
-        console.error('Lỗi xử lý ảnh:', file.name, error);
-        alert('Không xử lý được ảnh "' + file.name + '".');
+        const persisted=await saveLocalDraft();
+        if(!persisted){
+          const imagePersisted=!photosDirty&&(photosStoredInLocal||photos.length>0);
+          alert(imagePersisted
+            ?'Ảnh đã được thêm và lưu riêng. Tuy nhiên nháp số liệu chưa lưu được vì dung lượng trình duyệt đã đầy.'
+            :'Ảnh đã được thêm và đang giữ trên màn hình, nhưng trình duyệt chưa lưu được nháp. Hãy xuất PDF trước khi đóng trang.');
+        }
+        await new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+      }catch(error){
+        console.error('Lỗi xử lý ảnh:',file.name,error);
+        alert('Không xử lý được ảnh "'+(file.name||'không tên')+'": '+(error.message||'định dạng không được hỗ trợ'));
       }
     }
-  } finally {
-    input.disabled = false;
-    input.value = '';
+    if(skipped.length) alert('Bỏ qua tệp không nhận diện là ảnh: '+skipped.join(', ')+'. Hãy chọn JPG, PNG hoặc định dạng ảnh được trình duyệt hỗ trợ.');
+  }finally{
+    input.disabled=false;
+    input.value='';
   }
 });
 /* TỰ ĐĂNG NHẬP - LUÔN KIỂM TRA ÍT NHẤT 1,5 GIÂY */
@@ -2189,16 +2349,24 @@ async function autoLogin() {
       if (mainApp) mainApp.style.display = 'none';
       return;
     }
-    if (loginScreen) loginScreen.style.display = 'none';
-    if (mainApp) mainApp.style.display = 'block';
     renderWorkers();
     calc();
     // Tải lịch sử trước khi khôi phục để tránh tạo nháp rỗng đè báo cáo D1.
-    await loadHistory();
+    const historyLoaded = await loadHistory();
     const todayData = getSavedData(today());
-    restoreDraft(today(), !todayData);
+    if (todayData) {
+      restoreDraft(today(), false);
+    } else if (historyLoaded) {
+      restoreDraft(today(), true);
+    } else {
+      document.getElementById('date').value = today();
+      calc();
+      statusDraft('Chưa tải được lịch sử máy chủ. Chưa tạo nháp mới để tránh ghi đè số liệu; hãy kiểm tra kết nối.', '#dc3545');
+    }
     restoreColdStoreDraft(today());
     calc();
+    if (loginScreen) loginScreen.style.display = 'none';
+    if (mainApp) mainApp.style.display = 'block';
   } catch (e) {
     console.error('Tự đăng nhập thất bại:', e);
     if (loginScreen) loginScreen.style.display = 'block';
