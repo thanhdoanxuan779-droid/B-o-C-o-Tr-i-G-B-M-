@@ -718,11 +718,48 @@ async function api(path,options={}){
  return result;
 }
 
+
+
 function updateCumulativeEggs(){
-  let total = 0;
+  const dates = new Set();
 
   (Array.isArray(reports) ? reports : []).forEach(report => {
-    const data = parseReportData(report.data);
+    const date = String(report.date || '').slice(0,10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) dates.add(date);
+  });
+
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(DRAFT_PREFIX)) continue;
+
+      const date = key.slice(DRAFT_PREFIX.length);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) dates.add(date);
+    }
+  } catch(e) {}
+
+  const currentDate = String($('#date').value || '').slice(0,10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(currentDate)) {
+    dates.add(currentDate);
+  }
+
+  let total = 0;
+
+  dates.forEach(date => {
+    let data;
+
+    if (date === currentDate) {
+      data = {
+        egg1: val('egg1'),
+        egg2: val('egg2'),
+        egg3: val('egg3'),
+        eggOther: val('eggOther')
+      };
+    } else {
+      data = getSavedData(date);
+    }
+
+    data = parseReportData(data);
     if (!data) return;
 
     total += Math.max(0, Number(data.egg1) || 0);
@@ -734,7 +771,6 @@ function updateCumulativeEggs(){
   const el = document.getElementById('totalEggsSinceStart');
   if (el) el.textContent = fmt(total) + ' quả';
 }
-
 /* TỔNG CÁM ĐÃ NHẬP TRÊN MÁY CHỦ */
 
 function updateCumulativeFeed(){
@@ -1040,9 +1076,12 @@ form.elements.coldStoreEnd.value=coldStoreEnd;
  const feed=val('feedStart')+val('feedIn')-val('feedUsed');
  const feed2=val('feed2Start')+val('feed2In')-val('feed2Used');
 
+ 
  setText('sFlock',fmt(flock));
  setText('sEggs',fmt(eggs));
+ updateCumulativeEggs();
  setText('sRate',rate.toFixed(2)+'%');
+
  setText('sQuality',quality.toFixed(2)+'%');
 setText('rHensEnd',fmt(hensEnd)+' con');
 setText('rRoostersEnd',fmt(roostersEnd)+' con');
