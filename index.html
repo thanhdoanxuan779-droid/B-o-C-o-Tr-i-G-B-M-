@@ -908,8 +908,19 @@ if(todayData){
 }else{
  restoreDraft(today(),true);
 }
+ 
  restoreColdStoreDraft(today());
+
+ // Tính lại tồn đầu trứng sau khi tải lịch sử D1.
+ const stock = getEggStockBeforeDate(today());
+
+ if (stock !== null) {
+  form.elements.eggStockStart.value = stock;
+ }
+
  calc();
+ saveLocalDraft();
+
 
  }catch(e){
   error.textContent='Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
