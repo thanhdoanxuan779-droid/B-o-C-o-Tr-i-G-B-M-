@@ -223,23 +223,23 @@ textarea{min-height:76px;resize:vertical}
 .worker-count{font-size:11px;color:var(--muted);margin-top:8px}
 @media(min-width:500px){.content{padding:16px}.summary{grid-template-columns:repeat(4,minmax(0,1fr))}.stat strong{font-size:20px}}
 @media(max-width:370px){.header{padding:18px 12px}h1{font-size:17px}.tag{font-size:10px}.content{padding:9px}.card-body{padding:11px}.grid{gap:9px}.feed-group,.feed-total-group{padding:9px}.feed-total-grid{gap:7px}.feed-total-grid label{font-size:10px}.actions{padding:8px;gap:6px;margin-left:9px;margin-right:9px}.btn{font-size:12px}.worker-fields{grid-template-columns:minmax(0,1fr)}}
-@media print{body{background:white;font-size:11px}.app{max-width:none}.header{background:white!important;color:#111;padding:8px 0;border-radius:0}.header p{color:#333;opacity:1}.content{padding:5px 0}.summary{grid-template-columns:repeat(4,1fr)}.stat,.card{break-inside:avoid;border-color:#ccc}.actions,.no-print,.footer,.draft-status,.add-worker,.remove-worker{display:none!important}input,select,textarea{background:white;border-color:transparent;padding:3px 0;box-shadow:none!important}textarea{min-height:35px}.card-head{padding:8px}.card-body{padding:8px}.result{padding:5px}
+@media print{body{background:white;font-size:11px}.app{max-width:none}.header{background:white!important;color:#111;padding:8px 0;border-radius:0}.header p{color:#333;opacity:1}.content{padding:5px 0}.summary{grid-template-columns:repeat(4,1fr)}.stat,.card{break-inside:avoid;border-color:#ccc}.actions,.no-print,.footer,.draft-status,.add-worker,.remove-worker{display:none!important}input,select,textarea{background:white;border-color:transparent;padding:3px 0;box-shadow:none!important}textarea{min-height:35px}.card-head{padding:8px}.card-body{padding:8px}.result{padding:5px}}
 /* ÉP TẤT CẢ Ô CHỈ ĐỌC HIỆN NỀN XÁM */
 html body input[readonly],
 html body input:disabled,
 html body textarea[readonly],
 html body textarea:disabled,
-html body input[name=“feedStart”],
-html body input[name=“feed2Start”] {
+html body input[name="feedStart"],
+html body input[name="feed2Start"] {
 -webkit-appearance: none !important;
 appearance: none !important;
-background: #cccccc !important;
-background-color: #cccccc !important;
+background: #eef2ef !important;
+background-color: #eef2ef !important;
 background-image: none !important;
 color: #555555 !important;
 -webkit-text-fill-color: #555555 !important;
 border: 1px solid #999999 !important;
-box-shadow: inset 0 0 0 1000px #cccccc !important;
+box-shadow: inset 0 0 0 1000px #eef2ef !important;
 opacity: 1 !important;
 pointer-events: none !important;
 -webkit-user-select: none !important;
@@ -625,7 +625,7 @@ user-select: none !important;
     </div>
   </div>
 </div>
-   <p class="note">Ảnh chỉ hiển thị trong phiên hiện tại; chưa được lưu vào nháp hoặc tải lên máy chủ.</p>
+   <p class="note">Ảnh được lưu trong nháp trên thiết bị (có thể bị giới hạn dung lượng); chưa tải lên máy chủ nên không có trong lịch sử D1.</p>
    <div class="divider"></div>
    <div class="checkrow">
     <label class="check"><input type="checkbox" name="confirmed"> Đã kiểm tra số liệu</label>
@@ -872,16 +872,6 @@ row.append(nameField, statusField);
 card.append(title, row);
 box.appendChild(card);
 
-  statusSelect.value=worker.status||'Có mặt';
-  statusSelect.addEventListener('change',()=>{
-   workers[index].status=statusSelect.value;
-   scheduleDraftSave();
-  });
-
-  statusField.append(statusLabel,statusSelect);
-  row.append(nameField,statusField);
-  card.append(title,row);
-  box.appendChild(card);
  });
 
  $('#workerCount').textContent='Tổng số công nhân: '+workers.length+' người.';
@@ -1145,6 +1135,7 @@ return data;
 }
 
 function setData(data){
+ data=parseReportData(data)||{};
  fields.forEach(el=>{
   if(!(el.name in data)) return;
   if(el.type==='checkbox') el.checked=!!data[el.name];
@@ -1195,7 +1186,7 @@ function saveLocalDraft(){
   localStorage.setItem(DRAFT_PREFIX+date,JSON.stringify(data));
   statusDraft('✓ Nháp ngày '+date.split('-').reverse().join('/')+' đã tự lưu trên thiết bị. Chưa gửi lên D1.','#146c43');
  }catch(e){
-  statusDraft('Không lưu được nháp trên thiết bị. Có thể bộ nhớ trình duyệt đã đầy.','#dc3545');
+  statusDraft('Không lưu được nháp trên thiết bị. Bộ nhớ có thể đã đầy; thử xóa bớt ảnh minh chứng.','#dc3545');
  }
 }
 
@@ -1494,7 +1485,7 @@ function renderHistory(){
 
  reports.forEach(report=>{
   const date=report.date;
-  const data=report.data||{};
+  const data=parseReportData(report.data)||{};
   const item=document.createElement('div');
   item.className='history-item';
 
@@ -1514,8 +1505,9 @@ function renderHistory(){
   const open=document.createElement('button');
   open.textContent='Mở';
   open.onclick=()=>{
-   if(data.date){
-    restoreDraft(data.date,false);
+   const reportDate=String(report.date||data.date||'').slice(0,10);
+   if(reportDate){
+    restoreDraft(reportDate,false);
    }else{
     setData(data);
    }
@@ -2201,13 +2193,12 @@ async function autoLogin() {
     if (mainApp) mainApp.style.display = 'block';
     renderWorkers();
     calc();
+    // Tải lịch sử trước khi khôi phục để tránh tạo nháp rỗng đè báo cáo D1.
+    await loadHistory();
     const todayData = getSavedData(today());
     restoreDraft(today(), !todayData);
     restoreColdStoreDraft(today());
     calc();
-    loadHistory().catch(e => {
-      console.error('Tải lịch sử thất bại:', e);
-    });
   } catch (e) {
     console.error('Tự đăng nhập thất bại:', e);
     if (loginScreen) loginScreen.style.display = 'block';
