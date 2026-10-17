@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#146c43">
 <title>BÁO CÁO TRẠI GÀ BỐ MẸ</title>
 <style>
@@ -135,12 +135,12 @@ textarea{min-height:76px;resize:vertical}
  overflow:hidden
 }
 .photo-item img{
- display:block;
- width:100%;
- height:140px;
- object-fit:contain;
- background:#f3f6f4;
- border-radius:8px;
+	display:block;
+	width:100%;
+	height:120px;
+	object-fit:contain;
+	background:#f3f6f4;
+	border-radius:8px;
  cursor:pointer
 }
 .photo-name{
@@ -211,7 +211,7 @@ textarea{min-height:76px;resize:vertical}
  .photo-item img{height:100px}
 }
 .footer{text-align:center;color:var(--muted);font-size:10px;padding:15px}
-.draft-status{font-size:11px;line-height:1.4;padding:9px 11px;margin-bottom:12px;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--muted);min-height:72px;display:flex;align-items:center;overflow-wrap:anywhere}
+.draft-status{font-size:11px;line-height:1.4;padding:9px 11px;margin-bottom:12px;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--muted);height:76px;min-height:76px;max-height:76px;flex:0 0 76px;display:flex;align-items:center;overflow:auto;overflow-wrap:anywhere}
 .worker-card{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:10px;background:#fbfdfb}
 .worker-card:last-child{margin-bottom:0}
 .worker-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
@@ -258,7 +258,8 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
 .actions{width:calc(100% - 16px)!important;max-width:none!important;margin:10px 8px 0!important;box-sizing:border-box;background:#fff}
 .card-body,.grid,.field,.feed-group,.feed-total-group,.worker-fields{min-width:0;max-width:100%}
 .card-body input,.card-body select,.card-body textarea{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important}
-.card-body input[type="number"]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-variant-numeric:tabular-nums}
+.card-body input[type="number"]{min-width:0!important;overflow-x:auto!important;overflow-y:hidden!important;text-overflow:clip!important;white-space:nowrap!important;font-size:16px!important;font-variant-numeric:tabular-nums;text-align:left!important;padding-left:8px!important;padding-right:8px!important}
+.card-body input[type="number"]::-webkit-inner-spin-button,.card-body input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .result,.result>strong,.result>span,#rEggCumulative>div{min-width:0;overflow-wrap:anywhere}
 .result>strong{max-width:100%;font-size:clamp(12px,4vw,16px)}
 #rEggCumulative{margin-top:14px!important;row-gap:8px!important;align-items:stretch}
@@ -349,9 +350,19 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
 @media(max-width:420px){
  #headerFlock{display:none}
 }
-.stat strong{min-height:32px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.result>strong{white-space:nowrap}
-#eggWarning{min-height:36px;display:flex;align-items:center}
+.stat strong{display:block;min-width:0;max-width:100%;min-height:40px;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;word-break:normal;line-height:20px;font-size:clamp(14px,4.2vw,18px);letter-spacing:normal}
+.result,.result>strong,.result>span,#rEggCumulative>div{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:normal}
+.result>strong{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.3}
+#rEggCumulative>div{white-space:normal!important;overflow:visible!important;flex-wrap:wrap;line-height:1.3}
+#eggWarning{min-height:44px;display:flex;align-items:center;line-height:1.35;overflow-wrap:anywhere}
+@media print{
+ html body input[readonly],html body input:disabled,html body textarea[readonly],html body textarea:disabled,html body input[name="feedStart"],html body input[name="feed2Start"]{
+  background:#fff!important;background-color:#fff!important;background-image:none!important;color:#111!important;-webkit-text-fill-color:#111!important;border-color:transparent!important;box-shadow:none!important;opacity:1!important
+ }
+ .photo-list{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:6px!important}
+ .photo-item{break-inside:avoid;min-width:0}
+ .photo-item img{height:120px!important;width:100%!important;object-fit:contain!important}
+}
 </style>
 </head>
 <body>
@@ -625,7 +636,7 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
     </div>
    </div>
 
-   <p class="note">Tổng cám nhập được tính từ các báo cáo đã lưu trên máy chủ, không tính nháp chưa lưu.</p>
+   <p class="note">Tổng cám đến ngày đang chọn gồm các báo cáo đã lưu trước đó và số đang nhập của ngày này; không tính nháp ở ngày khác.</p>
    <div class="field" style="margin-top:12px"><label>Ghi chú cám – nước</label><textarea name="feedNote" placeholder="Loại cám, số bao, lượng nước, áp lực nước, đường ống..."></textarea></div>
   </div>
  </section>
@@ -753,11 +764,14 @@ let photoWriteQueue=Promise.resolve();
 let reports=[];
 let farms=[];
 let selectedFarm=null;
+let farmEntryToken=0;
 let reportDirty=false;
 let currentReportFarmName='';
 let busy=false;
 let restoringDraft=false;
 let draftTimer=null;
+let draftSaveQueue=Promise.resolve();
+let editRevision=0;
 let workers=[
  {name:'Đoàn Xuân Thanh',status:'Có mặt'},
  {name:'Đoàn Thị Hồi',status:'Có mặt'}
@@ -862,16 +876,16 @@ async function getPassword(){
 }
 
 async function api(path,options={}){
+ const needsFarm=path==='/api/reports'||path.startsWith('/api/reports?')||path==='/api/feed-total';
+ const requestFarmId=needsFarm?selectedFarm?.id:null;
+ if(needsFarm&&!requestFarmId) throw new Error('Hãy chọn trại trước khi truy cập báo cáo.');
  const password=await getPassword();
  const headers={
   ...(options.body?{'Content-Type':'application/json'}:{}),
   ...(options.headers||{}),
   'X-App-Password':password
  };
- if(path==='/api/reports'||path.startsWith('/api/reports?')||path==='/api/feed-total'){
-  if(!selectedFarm) throw new Error('Hãy chọn trại trước khi truy cập báo cáo.');
-  headers['X-Farm-Id']=selectedFarm.id;
- }
+ if(needsFarm) headers['X-Farm-Id']=requestFarmId;
  const res=await fetch(WORKER_URL+path,{...options,headers});
  let result;
  try{result=await res.json();}
@@ -926,29 +940,77 @@ function updateCumulativeEggs(){
 function updateCumulativeFeed(){
  let totalBags=0;
  let total2Bags=0;
+ const currentDate=String($('#date')?.value||'').slice(0,10);
+ const hasCurrentDate=/^\d{4}-\d{2}-\d{2}$/.test(currentDate);
+ const toQuantity=value=>{
+  if(typeof value==='number') return Number.isFinite(value)&&value>0?value:0;
+  let text=String(value??'').trim().replace(/[\s\u00a0]/g,'');
+  if(!text) return 0;
+  const comma=text.lastIndexOf(',');
+  const dot=text.lastIndexOf('.');
+  if(comma>=0&&dot>=0){
+   const decimal=comma>dot?',':'.';
+   const grouping=decimal===','?'.':',';
+   text=text.split(grouping).join('').replace(decimal,'.');
+  }else if(comma>=0||dot>=0){
+   const separator=comma>=0?',':'.';
+   const groups=text.split(separator);
+   const thousands=groups.length>1&&groups.slice(1).every(group=>group.length===3);
+   text=thousands?groups.join(''):text.replace(separator,'.');
+  }
+  const n=Number(text);
+  return Number.isFinite(n)&&n>0?n:0;
+ };
 
  (Array.isArray(reports)?reports:[]).forEach(report=>{
-  let data=report?.data??report;
-
-  if(typeof data==='string'){
-   try{data=JSON.parse(data)}catch(e){data={}}
-  }
-
-  if(!data||typeof data!=='object') return;
-
-  const bags=Number(String(data.feedIn??'').trim().replace(',','.'))||0;
-  const bags2=Number(String(data.feed2In??'').trim().replace(',','.'))||0;
-
-  if(Number.isFinite(bags)&&bags>0) totalBags+=bags;
-  if(Number.isFinite(bags2)&&bags2>0) total2Bags+=bags2;
+  const day=reportDate(report);
+  // Khi xem ngày cụ thể, bỏ bản đã lưu của chính ngày đó để thay bằng số đang hiển thị,
+  // đồng thời không cộng các ngày tương lai vào tổng lũy kế.
+  if(hasCurrentDate&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&(day===currentDate||day>currentDate)) return;
+  const data=parseReportData(report?.data??report?.payload)??parseReportData(report);
+  if(!data) return;
+  totalBags+=toQuantity(data.feedIn);
+  total2Bags+=toQuantity(data.feed2In);
  });
 
+ // Bao gồm nháp/báo cáo đang mở, nhưng không cộng trùng phiên bản đã lưu cùng ngày.
+ if(hasCurrentDate){
+  totalBags+=toQuantity(form.elements.feedIn.value);
+  total2Bags+=toQuantity(form.elements.feed2In.value);
+ }
+
  $('#totalFeedBags').value=fmt(totalBags)+' bao';
- $('#totalFeedKg').value=fmt(totalBags*25)+' kg';
- $('#totalFeed2Bags').value=fmt(total2Bags)+' bao';
- $('#totalFeed2Kg').value=fmt(total2Bags*25)+' kg';
+	 $('#totalFeedKg').value=fmt(totalBags*25)+' kg';
+	 $('#totalFeed2Bags').value=fmt(total2Bags)+' bao';
+	 $('#totalFeed2Kg').value=fmt(total2Bags*25)+' kg';
+	 fitLongNumericInputs();
 }
 
+
+const numericMeasureCanvas=document.createElement('canvas');
+const numericMeasureContext=numericMeasureCanvas.getContext('2d');
+function fitLongNumericInputs(){
+	if(!numericMeasureContext)return;
+	document.querySelectorAll('.card-body input[type="number"],.card-body input[readonly]').forEach(el=>{
+		el.style.removeProperty('font-size');
+		const text=String(el.value||'').trim();
+		if(!text)return;
+		if(el.type!=='number'&&!/^[\d\s.,+\-()%\u00a0]*(?:con|quả|bao|kg|lít)?$/i.test(text))return;
+		const style=window.getComputedStyle(el);
+		const baseSize=parseFloat(style.fontSize)||16;
+		const horizontalPadding=(parseFloat(style.paddingLeft)||0)+(parseFloat(style.paddingRight)||0);
+		const horizontalBorder=(parseFloat(style.borderLeftWidth)||0)+(parseFloat(style.borderRightWidth)||0);
+		const reserved=el.type==='number'?12:6;
+		const available=Math.max(24,el.clientWidth-horizontalPadding-horizontalBorder-reserved);
+		let size=baseSize;
+		while(size>14){
+			numericMeasureContext.font=`${style.fontWeight} ${size}px ${style.fontFamily}`;
+			if(numericMeasureContext.measureText(text).width<=available)break;
+			size=Math.max(14,size-0.5);
+		}
+		if(size<baseSize)el.style.setProperty('font-size',`${size}px`,'important');
+	});
+}
 
 /* QUẢN LÝ DANH SÁCH CÔNG NHÂN */
 function renderWorkers(){
@@ -1129,14 +1191,25 @@ function renderFarmChooser(preferredId){
  renderFarmManagement();
 }
 async function showFarmChooser(preferredId){
- await refreshFarms();
  const login=document.getElementById('loginScreen');
  const app=document.getElementById('mainApp');
  const chooser=document.getElementById('farmSelectScreen');
+ const error=document.getElementById('farmSelectError');
  if(login)login.style.display='none';
  if(app)app.style.display='none';
  if(chooser)chooser.style.display='flex';
+ farms=[];
  renderFarmChooser(preferredId);
+ if(error)error.textContent='Đang tải danh sách trại…';
+ try{
+  await refreshFarms();
+  return true;
+ }catch(e){
+  farms=[];
+  renderFarmChooser('');
+  if(error)error.textContent='Không tải được danh sách trại: '+e.message;
+  return false;
+ }
 }
 
 async function createFarm(){
@@ -1155,42 +1228,55 @@ async function createFarm(){
  }catch(e){if(error)error.textContent=e.message;}
 }
 async function enterFarm(farmId){
+ const token=++farmEntryToken;
  const farm=farms.find(item=>item.id===farmId);
  const error=document.getElementById('farmSelectError');
+ const enter=document.getElementById('enterFarmBtn');
+ const oldEnterText=enter?.textContent||'Vào trại đã chọn';
  if(!farm){if(error)error.textContent='Trại đã chọn không còn khả dụng. Hãy tải lại danh sách.';return;}
+ if(enter){enter.disabled=true;enter.textContent='Đang mở trại…';}
  try{
   selectedFarm=farm;
   localStorage.setItem(FARM_KEY,farm.id);
   await migrateLegacyLocalDrafts(farm.id);
   setReportFarmName(farm.name);
   const loaded=await loadHistory();
+  if(token!==farmEntryToken||selectedFarm?.id!==farmId)return;
   if(!loaded)throw new Error('Không tải được báo cáo của trại này. Chưa mở biểu mẫu để tránh ghi/lọc nhầm dữ liệu.');
   const todayData=getSavedData(today());
   if(todayData){restoreDraft(today(),false);}
   else{restoreDraft(today(),true);}
   restoreColdStoreDraft(today());
-  if(loaded){
-   const stock=getEggStockBeforeDate(today());
-   if(stock!==null)form.elements.eggStockStart.value=stock;
-   calc();
-   await saveLocalDraft();
-  }
+  const stock=getEggStockBeforeDate(today());
+  if(stock!==null)form.elements.eggStockStart.value=stock;
+  calc();
+  await saveLocalDraft();
+  if(token!==farmEntryToken||selectedFarm?.id!==farmId)return;
   reportDirty=false;
   const chooser=document.getElementById('farmSelectScreen');
   if(chooser)chooser.style.display='none';
   document.getElementById('mainApp').style.display='block';
  }catch(e){
+  if(token!==farmEntryToken)return;
   console.error('Không thể vào trại:',e);
   if(error)error.textContent=e.message||'Không thể mở trại.';
   selectedFarm=null;
+ }finally{
+  if(token===farmEntryToken&&enter){
+   enter.textContent=oldEnterText;
+   enter.disabled=!document.querySelector('input[name="selectedFarm"]:checked');
+  }
  }
 }
 
 async function switchFarm(){
+ if(busy){alert('Đang lưu báo cáo hoặc tạo PDF. Vui lòng đợi xong rồi hãy đổi trại.');return;}
  if(reportDirty&&!confirm('Báo cáo hiện tại có thay đổi chưa lưu lên máy chủ. Nháp sẽ được lưu trên thiết bị trước khi đổi trại. Bạn có muốn tiếp tục?'))return;
  if(selectedFarm&&$('#date').value){
+  const revisionBeforeSave=editRevision;
   const persisted=await saveLocalDraft();
   if(reportDirty&&!persisted){alert('Không lưu được nháp trên thiết bị. Hãy giải phóng dung lượng rồi thử đổi trại lại.');return;}
+  if(editRevision!==revisionBeforeSave){alert('Biểu mẫu vừa được chỉnh sửa trong lúc lưu nháp. Hãy đợi tự lưu xong rồi bấm đổi trại lại để tránh mất dữ liệu.');return;}
  }
  clearTimeout(draftTimer);
  reportDirty=false;
@@ -1252,8 +1338,13 @@ async function migrateLegacyLocalDrafts(farmId){
     const suffix=key.slice(prefix.length);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(suffix)) continue;
     const destination=prefix+encodeURIComponent(farmId)+'_'+suffix;
-    if(localStorage.getItem(destination)!==null) continue;
     let value=localStorage.getItem(key);
+    if(value===null) continue;
+    const previousValue=localStorage.getItem(destination);
+    if(previousValue!==null){
+     const savedAt=raw=>{try{return Number(JSON.parse(raw)?.savedAt)||0}catch(e){return 0}};
+     if(savedAt(value)<=savedAt(previousValue)) continue;
+    }
     if(prefix===DRAFT_PREFIX){
      try{const data=JSON.parse(value);if(data&&typeof data==='object'){data.farmId=farmId;data.farmNameSnapshot=selectedFarm?.name||'Trại mặc định';value=JSON.stringify(data);}}catch(e){}
     }
@@ -1263,13 +1354,13 @@ async function migrateLegacyLocalDrafts(farmId){
  }catch(e){console.warn('Không thể sao chép toàn bộ nháp cũ sang khóa trại mặc định:',e);}
 }
 
-function saveColdStoreDraft(date){
+function saveColdStoreDraft(date,reportData=null){
  date=String(date||$('#date').value||'').slice(0,10);
  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
  try{
   localStorage.setItem(coldStoreDraftKey(date),JSON.stringify({
-   eggHandover:form.elements.eggHandover.value,
-   coldStoreOut:form.elements.coldStoreOut.value,
+   eggHandover:reportData?.eggHandover??form.elements.eggHandover.value,
+   coldStoreOut:reportData?.coldStoreOut??form.elements.coldStoreOut.value,
    savedAt:Date.now()
   }));
  }catch(e){console.error('Không lưu được nháp kho lạnh:',e);}
@@ -1297,32 +1388,62 @@ function calculateColdStore(date,currentIn,currentOut){
  const target=String(date||'').slice(0,10);
  if(!/^\d{4}-\d{2}-\d{2}$/.test(target)) return 0;
  const daily=new Map();
+ const priorDates=new Set();
+
  (Array.isArray(reports)?reports:[]).forEach(report=>{
-  const d=String(report.date||'').slice(0,10);
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>=target) return;
-  const data=parseReportData(report.data);
-  if(data) daily.set(d,data);
+  const d=reportDate(report);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<target) priorDates.add(d);
  });
+
  try{
+  const draftPrefix=scopedStoragePrefix(DRAFT_PREFIX);
+  const coldPrefix=scopedStoragePrefix(COLD_STORE_DRAFT_PREFIX);
   for(let i=0;i<localStorage.length;i++){
    const key=localStorage.key(i);
-   if(!key||!key.startsWith(scopedStoragePrefix(DRAFT_PREFIX))) continue;
-   const d=key.slice(scopedStoragePrefix(DRAFT_PREFIX).length);
-   if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>=target||daily.has(d)) continue;
-   const data=parseReportData(localStorage.getItem(key));
-   if(data) daily.set(d,data);
+   if(!key) continue;
+   if(key.startsWith(draftPrefix)){
+    const d=key.slice(draftPrefix.length);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<target) priorDates.add(d);
+   }
+   if(key.startsWith(coldPrefix)){
+    const d=key.slice(coldPrefix.length);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<target) priorDates.add(d);
+   }
   }
+
+  // Dùng cùng quy tắc ưu tiên bản nháp mới hơn báo cáo đã lưu như khi khôi phục biểu mẫu.
+  priorDates.forEach(d=>{
+   const data=getSavedData(d);
+   if(data) daily.set(d,data);
+  });
+
   for(let i=0;i<localStorage.length;i++){
    const key=localStorage.key(i);
-   if(!key||!key.startsWith(scopedStoragePrefix(COLD_STORE_DRAFT_PREFIX))) continue;
-   const d=key.slice(scopedStoragePrefix(COLD_STORE_DRAFT_PREFIX).length);
-   if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>=target||daily.has(d)) continue;
+   if(!key||!key.startsWith(coldPrefix)) continue;
+   const d=key.slice(coldPrefix.length);
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>=target) continue;
    try{
     const cold=JSON.parse(localStorage.getItem(key)||'null');
-    if(cold) daily.set(d,{eggHandover:cold.eggHandover,coldStoreOut:cold.coldStoreOut});
+    if(!cold||typeof cold!=='object') continue;
+    const existing=daily.get(d)||{};
+    const report=(Array.isArray(reports)?reports:[]).find(r=>reportDate(r)===d);
+    const serverData=report?parseReportData(report.data):null;
+    const fullTime=Math.max(
+     Date.parse(existing.savedAt||'')||0,
+     Date.parse(serverData?.savedAt||report?.updatedAt||report?.updated_at||'')||0
+    );
+    if(!daily.has(d)||Number(cold.savedAt||0)>fullTime){
+     daily.set(d,{
+      ...existing,
+      eggHandover:cold.eggHandover??existing.eggHandover,
+      coldStoreOut:cold.coldStoreOut??existing.coldStoreOut,
+      savedAt:cold.savedAt||existing.savedAt
+     });
+    }
    }catch(e){}
   }
  }catch(e){console.error('Không đọc được nháp tồn kho lạnh:',e);}
+
  let total=0;
  [...daily.entries()].sort((a,b)=>a[0].localeCompare(b[0])).forEach(([,data])=>{
   total+=Math.max(0,Number(data.eggHandover)||0);
@@ -1393,10 +1514,11 @@ setText('rFlock',fmt(flock)+' con');
    :'✓ Số trứng phân loại khớp tổng trứng thu.';
 
  $('#eggWarning').style.color=classified>eggs?'#dc3545':'#718078';
+ updateCumulativeFeed();
  return {
  flock,eggs,rate,quality,classified,eggStock,feed,feed2,
  coldStoreIn,coldStoreOut,coldStoreEnd
-};
+ };
 }
 
 /* LẤY VÀ KHÔI PHỤC DỮ LIỆU */
@@ -1475,7 +1597,7 @@ renderPhotos();
 }
 
 /* LƯU NHÁP TRÊN THIẾT BỊ */
-async function saveLocalDraft(){
+async function saveLocalDraftNow(){
  if(restoringDraft) return true;
  const date=$('#date').value;
  if(!date) return false;
@@ -1544,8 +1666,15 @@ async function saveLocalDraft(){
  }
 }
 
+function saveLocalDraft(){
+ const task=draftSaveQueue.then(()=>saveLocalDraftNow());
+ draftSaveQueue=task.catch(()=>{});
+ return task;
+}
+
 function scheduleDraftSave(){
  if(restoringDraft) return;
+ editRevision++;
  reportDirty=true;
  statusDraft('Đang lưu nháp trên thiết bị…');
  clearTimeout(draftTimer);
@@ -1868,7 +1997,7 @@ function renderHistory(){
   del.style.color='#dc3545';
 
   del.onclick=async()=>{
-   if(!confirm('Xóa báo cáo ngày '+date.split('-').reverse().join('/')+' trên máy chủ? Tất cả người dùng sẽ không còn thấy báo cáo này.')) return;
+   if(!confirm('Xóa báo cáo ngày '+date.split('-').reverse().join('/')+' trên máy chủ? Tất cả người dùng sẽ không còn thấy bản máy chủ. Nháp và ảnh đã lưu trên thiết bị này không bị xóa; nếu còn nháp, chúng vẫn có thể được khôi phục riêng.')) return;
 
    try{
     del.disabled=true;
@@ -1890,15 +2019,19 @@ function renderHistory(){
 
 
 async function loadHistory(){
+  const requestFarmId=selectedFarm?.id;
+  if(!requestFarmId)return false;
   $('#history').innerHTML='<div class="empty">Đang tải báo cáo từ máy chủ...</div>';
   try{
     const result=await api('/api/reports');
+    if(selectedFarm?.id!==requestFarmId)return false;
     reports=deduplicateReports(result.reports);
     renderHistory();
     updateCumulativeFeed();
     updateCumulativeEggs();
     return true;
   }catch(e){
+    if(selectedFarm?.id!==requestFarmId)return false;
     reports=[];
     $('#history').innerHTML='';
     const message=document.createElement('div');
@@ -1915,6 +2048,7 @@ async function save(){
  if(busy) return;
  if(typeof form.reportValidity==='function'&&!form.reportValidity()) return;
 
+ const submittedRevision=editRevision;
  const data=getData();
 
  if(!data.date){alert('Hãy chọn ngày báo cáo.');return;}
@@ -1962,6 +2096,7 @@ async function save(){
 
  const btn=$('#saveBtn');
  const oldText=btn.textContent;
+ let serverSaved=false;
 
  try{
   busy=true;
@@ -1984,14 +2119,25 @@ await api('/api/reports',{
   method:'POST',
   body:JSON.stringify(serverData)
 });
-  saveColdStoreDraft(data.date);
-  await saveLocalDraft();
-  reportDirty=false;
-  await loadHistory();
-
-  alert('Đã lưu báo cáo ngày '+data.date.split('-').reverse().join('/')+' lên máy chủ thành công.');
+  serverSaved=true;
+  saveColdStoreDraft(data.date,data);
+  const localSaved=await saveLocalDraft();
+  reportDirty=editRevision!==submittedRevision;
+  const historyLoaded=await loadHistory();
+  if(reportDirty){
+   statusDraft('Báo cáo đã gửi lên máy chủ; các thay đổi mới hơn chỉ nằm trong nháp trên thiết bị. Hãy bấm Lưu lần nữa để đồng bộ.','#b25f00');
+  }else if(!localSaved){
+   statusDraft('Báo cáo đã gửi lên máy chủ, nhưng nháp trên thiết bị chưa lưu được.','#b25f00');
+  }
+  const savedMessage='Đã lưu báo cáo ngày '+data.date.split('-').reverse().join('/')+' lên máy chủ thành công.';
+  alert(historyLoaded?savedMessage:savedMessage+' Tuy nhiên không tải lại được lịch sử; hãy kiểm tra kết nối trước khi lưu tiếp.');
  }catch(e){
-  alert('Lưu báo cáo thất bại: '+e.message);
+  if(serverSaved){
+   reportDirty=editRevision!==submittedRevision;
+   alert('Báo cáo đã được gửi lên máy chủ, nhưng xảy ra lỗi ở bước sau khi lưu: '+e.message+'. Hãy tải lại lịch sử trước khi thử lưu lần nữa.');
+  }else{
+   alert('Lưu báo cáo thất bại: '+e.message);
+  }
  }finally{
   busy=false;
   btn.disabled=false;
@@ -2572,9 +2718,7 @@ async function autoLogin() {
   finally{if(btn){btn.disabled=false;btn.textContent='VÀO ỨNG DỤNG　→';}}
 }
 autoLogin();
-/* Ngăn overscroll bằng CSS; tránh touchmove preventDefault khi bàn phím di động đổi viewport. */
-document.documentElement.style.overscrollBehaviorY = 'none';
-document.body.style.overscrollBehaviorY = 'none';
+/* Giữ cuộn tự nhiên của trình duyệt khi bàn phím di động mở/đóng. */
 const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
 const historyPanel = document.getElementById('historyPanel');
 if (toggleHistoryBtn && historyPanel) {
