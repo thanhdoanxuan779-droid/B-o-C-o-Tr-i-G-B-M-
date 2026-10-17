@@ -271,28 +271,77 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
 
 
 /* Màn hình chọn/quản lý trại */
-.farm-screen{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;overflow:auto;padding:16px;background:linear-gradient(145deg,#eaf5ee,#f5f8f6);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.farm-panel{width:100%;max-width:460px;max-height:calc(100dvh - 32px);overflow:auto;background:#fff;border:1px solid #e5ebe7;border-radius:22px;padding:20px;box-shadow:0 15px 45px #146c4318}
-.farm-panel h2{font-size:19px;color:#146c43;margin:0 0 6px}
-.farm-panel p{font-size:12px;color:#718078;margin:0 0 14px}
-.farm-list{display:grid;gap:8px;margin:12px 0}
-.farm-choice{display:flex;align-items:center;gap:10px;width:100%;min-height:54px;padding:9px 10px;border:1px solid #dce5df;border-radius:12px;background:#fbfcfb}
-.farm-choice input{width:20px;height:20px;flex:0 0 20px;accent-color:#146c43}
-.farm-choice-name{min-width:0;flex:1;overflow-wrap:anywhere;font-size:14px;font-weight:750;color:#20312a}
-.farm-choice-actions{display:flex;gap:5px;flex:0 0 auto}
-.farm-choice-actions button{border:0;border-radius:8px;padding:8px 9px;font-size:11px;font-weight:750;background:#e9f2ec;color:#146c43}
-.farm-choice-actions .farm-delete{background:#fff0f0;color:#dc3545}
-.farm-add-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:12px}
-.farm-add-row input{min-width:0;width:100%;border:1px solid #dce5df;border-radius:10px;padding:11px;background:#fbfcfb;font:inherit}
-.farm-add-row button,.farm-enter{border:0;border-radius:10px;padding:11px 13px;background:#146c43;color:white;font-weight:800}
-.farm-enter{width:100%;margin-top:8px;min-height:46px}
-.farm-enter:disabled{opacity:.5}
-.farm-error{min-height:18px;margin-top:8px;color:#dc3545;font-size:12px}
+/* Mẫu 2: màn đăng nhập toàn màn hình kiểu huy hiệu trang trại */
+.login-screen{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:19px;box-sizing:border-box;width:100%;min-height:100vh;min-height:100dvh;padding:22px 18px 92px;overflow-y:auto;background:radial-gradient(ellipse at 50% 10%,#1e6241 0%,#123f2d 48%,#0c2c20 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f8f3e5}
+.login-scene,.login-card{position:relative;z-index:1;width:100%;max-width:410px}
+.login-scene{text-align:center}
+.login-emblem{width:154px;height:154px;margin:0 auto 8px;display:grid;place-items:center}
+.login-emblem svg{display:block;width:100%;height:100%;filter:drop-shadow(0 5px 15px #061b1460)}
+.login-scene h1{margin:7px 0 4px;color:#fff4d6;font-size:clamp(25px,7vw,34px);font-weight:900;letter-spacing:.3px;line-height:1.15}
+.login-subtitle{display:flex;align-items:center;justify-content:center;gap:10px;color:#e9e0c8;font-size:12px;letter-spacing:.45px}
+.login-subtitle:before,.login-subtitle:after{content:"";height:1px;width:22px;background:#c6a45a}
+.login-card{padding:20px 20px 18px;background:#f9f7f0;border:1px solid #eee4c9;border-radius:20px;box-shadow:0 12px 34px #061b1460;color:#20352a;box-sizing:border-box}
+.login-label{display:block;font-size:14px;font-weight:750;color:#20352a;margin:0 0 7px}
+.login-input-wrap{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;border:1px solid #ddd9cc;background:#fffefa;border-radius:11px;padding:0 12px;transition:border-color .16s,box-shadow .16s}
+.login-input-wrap:focus-within{border-color:#b58e3e;box-shadow:0 0 0 3px #b9944d24}
+.login-input-wrap>span{font-size:19px;flex-shrink:0}
+.login-input-wrap input{display:block;width:100%;min-width:0;flex:1;box-sizing:border-box;border:0!important;box-shadow:none!important;background:transparent!important;padding:14px 0;margin:0;outline:none;font-size:16px!important;color:#20352a}
+.login-error{color:#b42318;font-size:12px;min-height:18px;margin-top:6px}
+.login-button{display:block;width:100%;box-sizing:border-box;margin:0;border:0;border-radius:11px;padding:14px;background:linear-gradient(135deg,#aa8539,#c4a04f);color:#fff9e9;font-size:15px;font-weight:850;box-shadow:0 5px 14px #8c6d333d;cursor:pointer;transition:transform .14s,filter .14s}
+.login-button:active{transform:translateY(1px);filter:brightness(.97)}
+.login-button:disabled{opacity:.6;cursor:wait}
+.login-secure{text-align:center;font-size:11px;color:#526b59;margin-top:13px}
+.login-landscape{position:absolute;z-index:0;left:0;right:0;bottom:0;height:125px;width:100%;opacity:.76;pointer-events:none}
+.login-landscape svg{display:block;width:100%;height:100%}
+
+/* Mẫu 2: thanh tiêu đề xanh tràn ngang, nội dung chọn trại trên nền kem */
+.farm-screen{position:fixed;inset:0;z-index:99990;display:none;align-items:stretch;justify-content:center;overflow:auto;padding:0;background:#f8f6ef;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#20352a}
+.farm-panel{position:relative;width:100%;max-width:none;min-height:100dvh;overflow:visible;background:#f8f6ef;border:0;border-radius:0;padding:0;box-shadow:none}
+.farm-topbar{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:42px minmax(0,1fr) 46px;align-items:center;gap:11px;width:100%;min-height:76px;margin:0;padding:10px clamp(15px,4vw,34px);background:#123b2a;color:#f8f3e5;box-shadow:0 4px 16px #09271930}
+.farm-brand{display:contents}
+.farm-brand-mark{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:transparent;color:#d4b66c;font-size:22px;flex:0 0 auto}
+.farm-brand-title{min-width:0;overflow:hidden;color:#f4e7bc;font-size:clamp(15px,4vw,20px);font-weight:900;letter-spacing:.3px;text-overflow:ellipsis;white-space:nowrap}
+.farm-menu-toggle{width:44px;height:44px;display:grid;place-items:center;flex:0 0 auto;border:1px solid #c5a45b;border-radius:11px;background:#1c4d35;color:#f0d58b;font-size:23px;font-weight:800;line-height:1;cursor:pointer}
+.farm-menu-toggle:focus-visible,.farm-menu button:focus-visible,.farm-enter:focus-visible{outline:3px solid #d8bd79;outline-offset:2px}
+.farm-content{width:100%;max-width:500px;margin:0 auto;padding:23px 17px 32px}
+.farm-panel h2{font-size:26px;line-height:1.2;color:#173d2b;margin:0 0 7px;font-weight:850}
+.farm-panel> .farm-content > p{font-size:14px;color:#66736b;margin:0 0 19px}
+.farm-list{display:grid;gap:10px;margin:0 0 12px}
+.farm-choice{display:flex;align-items:center;gap:12px;width:100%;min-height:78px;padding:11px 14px;border:1px solid #e5e2da;border-radius:14px;background:#fffefa;box-shadow:0 2px 8px #22332008;transition:border-color .15s,background .15s,box-shadow .15s}
+.farm-choice.is-selected{border-color:#bd9a50;background:#fffdf6;box-shadow:0 0 0 2px #bd9a501c}
+.farm-choice-icon{width:42px;height:42px;display:grid;place-items:center;flex:0 0 42px;border-radius:50%;background:#e7eee8;color:#174a31}
+.farm-choice-icon svg{width:23px;height:23px}
+.farm-choice-meta{display:grid;gap:3px;min-width:0;flex:1}
+.farm-choice-name{min-width:0;overflow-wrap:anywhere;font-size:15px;font-weight:800;color:#20352a}
+.farm-choice-sub{font-size:12px;color:#7a817b}
+.farm-choice input{display:block;width:21px;height:21px;flex:0 0 21px;margin:0;padding:0;border:0;background:transparent;accent-color:#b18b40}
+.farm-enter{position:sticky;bottom:10px;width:100%;margin-top:12px;min-height:52px;border:0;border-radius:11px;padding:13px 14px;background:linear-gradient(135deg,#123b2a,#174832);color:#fff;font-weight:850;font-size:15px;box-shadow:0 6px 18px #123b2a24}
+.farm-enter:disabled{opacity:.48;box-shadow:none;cursor:not-allowed}
+.farm-error{min-height:18px;margin-top:8px;color:#b42318;font-size:12px}
+.farm-menu[hidden]{display:none!important}
+.farm-menu{position:fixed;z-index:100001;top:82px;right:12px;width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 96px);overflow:auto;padding:14px;background:#fcfaf4;border:1px solid #c6a15a;border-radius:15px;box-shadow:0 18px 50px #061b1460;color:#20352a}
+.farm-menu-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid #e8e1cf;color:#173b2a}
+.farm-menu-head strong{font-size:15px}
+.farm-menu-close{width:34px;height:34px;border:0;border-radius:9px;background:#efe9d9;color:#20352a;font-size:20px;line-height:1}
+.farm-menu-section{padding-top:12px}
+.farm-menu-section-title{display:block;margin-bottom:8px;color:#68766b;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.farm-manage-list{display:grid;gap:7px}
+.farm-manage-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 9px;border:1px solid #e5dfcf;border-radius:11px;background:#fffdf8}
+.farm-manage-name{min-width:0;overflow-wrap:anywhere;font-size:12px;font-weight:750;color:#20352a}
+.farm-manage-actions{display:flex;gap:5px}
+.farm-manage-actions button{border:1px solid #d9c99f;border-radius:8px;padding:7px 8px;background:#f5efdf;color:#294532;font-size:11px;font-weight:750;white-space:nowrap}
+.farm-manage-actions .farm-delete{border-color:#e6c2b8;background:#fff1ed;color:#a63524}
+.farm-manage-actions .farm-delete:disabled{opacity:.45;cursor:not-allowed}
+.farm-empty{padding:9px;color:#68766b;font-size:12px}
+.farm-add-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+.farm-add-row input{min-width:0;width:100%;border:1px solid #d8cfb7;border-radius:10px;padding:10px;background:#fffdf8;color:#20352a;font:inherit}
+.farm-add-row button{border:0;border-radius:10px;padding:10px 11px;background:#c1a054;color:#173a29;font-size:12px;font-weight:850;white-space:nowrap}
 .farm-banner{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding:8px 10px;border:1px solid #ffffff35;border-radius:11px;background:#ffffff14;font-size:12px}
 .farm-banner strong{overflow-wrap:anywhere}
 .farm-banner button{flex:0 0 auto;border:1px solid #ffffff70;border-radius:9px;background:#ffffff18;color:white;padding:7px 9px;font-size:11px;font-weight:750}
+@media(max-width:420px){.farm-content{padding:20px 14px 28px}.farm-choice{min-height:72px;padding:10px 11px}.farm-menu{top:78px}.farm-manage-item{grid-template-columns:minmax(0,1fr)}.farm-manage-actions button{padding:8px 10px}}
 .pdf-farm-label{margin:5px 2px 10px;padding:8px 10px;border:1px solid #dce5df;border-radius:10px;background:#eff8f2;color:#146c43;font-size:12px;font-weight:750;overflow-wrap:anywhere}
-@media(max-width:420px){.farm-panel{padding:16px;border-radius:18px}.farm-choice-actions button{padding:8px 7px}.farm-banner{align-items:flex-start;flex-direction:column}.farm-banner button{width:100%}}
+
 
 @media(max-width:767px){
  input,select,textarea{font-size:16px!important}
@@ -307,129 +356,68 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
 </head>
 <body>
 
-<div id="loginScreen" style="
-  position:fixed;
-  inset:0;
-  z-index:99999;
-  background:linear-gradient(145deg,#eaf5ee,#f5f8f6);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-sizing:border-box;
-  width:100%;
-  min-height:100vh;
-  min-height:100dvh;
-  padding:20px;
-  margin:0;
-  overflow-y:auto;
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-">
-  <div style="
-    background:#fff;
-    padding:28px 23px;
-    border-radius:24px;
-    width:100%;
-    max-width:360px;
-    box-sizing:border-box;
-    margin:auto;
-    flex-shrink:0;
-    box-shadow:0 15px 45px #146c4318;
-    border:1px solid #e5ebe7;
-  ">
-    <div style="text-align:center;margin-bottom:26px">
-      <div style="
-        width:76px;height:76px;
-        border-radius:24px;
-        background:#e5f5eb;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:39px;
-        margin:0 auto 16px;
-      ">🐔</div>
-      <div style="font-size:21px;font-weight:800;color:#146c43">
-        TRẠI GÀ BỐ MẸ
-      </div>
-      <div style="font-size:12px;color:#718078;margin-top:6px">
-        HỆ THỐNG QUẢN LÝ VÀ BÁO CÁO
-      </div>
+<div id="loginScreen" class="login-screen">
+  <div class="login-scene">
+    <div class="login-emblem" aria-hidden="true">
+      <svg viewBox="0 0 180 180" role="img">
+        <circle cx="90" cy="90" r="77" fill="none" stroke="#c8a75d" stroke-width="3"/>
+        <path d="M42 82 90 43l48 39M51 78v50h78V78" fill="none" stroke="#d8bd79" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M65 127c-2-16 8-30 25-31 11 0 19 7 21 17 8-2 12 3 12 9 0 7-7 11-16 11H72c-4 0-6-2-7-6Z" fill="#f4e8c9"/>
+        <circle cx="105" cy="79" r="8" fill="#f4e8c9"/><path d="m112 78 11 4-11 4M101 72c-4-5-10-1-7 3" fill="#d8bd79" stroke="#d8bd79" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M80 131v10m23-10v10m-7-45c0 9-8 12-15 12" fill="none" stroke="#f4e8c9" stroke-width="4" stroke-linecap="round"/>
+        <path d="M75 141h10m14 0h10" stroke="#d8bd79" stroke-width="3" stroke-linecap="round"/>
+      </svg>
     </div>
-    <div style="font-size:14px;font-weight:700;color:#20312a;margin-bottom:9px">
-      Mã truy cập
+    <h1>TRẠI GÀ BỐ MẸ</h1>
+    <div class="login-subtitle">HỆ THỐNG QUẢN LÝ VÀ BÁO CÁO</div>
+  </div>
+  <div class="login-card">
+    <label class="login-label" for="loginPassword">Mã truy cập</label>
+    <div class="login-input-wrap">
+      <span aria-hidden="true">🔒</span>
+      <input id="loginPassword" type="password" placeholder="Nhập mã truy cập" autocomplete="current-password">
     </div>
-    <div style="
-      display:flex;
-      align-items:center;
-      gap:10px;
-      width:100%;
-      box-sizing:border-box;
-      border:1px solid #dce5df;
-      background:#fbfcfb;
-      border-radius:13px;
-      padding:0 13px;
-    ">
-      <span style="font-size:19px;flex-shrink:0">🔒</span>
-      <input
-        id="loginPassword"
-        type="password"
-        placeholder="Nhập mã truy cập"
-        autocomplete="current-password"
-        style="
-          display:block;
-          width:100%;
-          min-width:0;
-          flex:1;
-          box-sizing:border-box;
-          border:0;
-          box-shadow:none;
-          background:transparent;
-          padding:15px 0;
-          margin:0;
-          outline:none;
-          font-size:16px;
-        "
-      >
-    </div>
-    <div id="loginError" style="
-      color:#dc3545;
-      font-size:12px;
-      min-height:18px;
-      margin-top:8px;
-    "></div>
-    <button id="loginBtn" type="button" style="
-      display:block;
-      width:100%;
-      box-sizing:border-box;
-      margin:0;
-      border:0;
-      border-radius:13px;
-      padding:15px;
-      background:linear-gradient(135deg,#146c43,#198754);
-      color:white;
-      font-size:15px;
-      font-weight:800;
-      box-shadow:0 6px 15px #146c4330;
-    ">VÀO ỨNG DỤNG　→</button>
-    <div style="
-      text-align:center;
-      font-size:11px;
-      color:#718078;
-      margin-top:19px;
-    ">🛡️ Truy cập được bảo vệ bằng mã</div>
+    <div id="loginError" class="login-error" role="status" aria-live="polite"></div>
+    <button id="loginBtn" type="button" class="login-button">VÀO ỨNG DỤNG</button>
+    <div class="login-secure">🛡️ Dữ liệu được bảo mật an toàn</div>
+  </div>
+  <div class="login-landscape" aria-hidden="true">
+    <svg viewBox="0 0 430 125" preserveAspectRatio="xMidYMax slice">
+      <path d="M0 75 Q65 42 130 76 T260 71 T430 66 V125 H0Z" fill="#6c927b" opacity=".55"/>
+      <path d="M0 91 Q72 57 150 89 T300 85 T430 83 V125 H0Z" fill="#9ab39b" opacity=".65"/>
+      <g fill="#123b2a" opacity=".72"><path d="M25 82 38 53l13 29h-8v20h-9V82Zm40 7 11-26 12 26h-7v16h-9V89Zm280-8 14-32 14 32h-9v22h-10V81Zm42 8 11-25 12 25h-7v15h-9V89Z"/><path d="M177 102V78l26-19 26 19v24h-18V85h-17v17Z"/></g>
+      <path d="M0 111 Q95 90 190 111 T430 109 V125 H0Z" fill="#c2ab72" opacity=".35"/>
+    </svg>
   </div>
 </div>
 <div id="farmSelectScreen" class="farm-screen" role="dialog" aria-modal="true" aria-labelledby="farmSelectTitle">
   <div class="farm-panel">
-    <div style="font-size:32px;margin-bottom:7px" aria-hidden="true">🐔</div>
-    <h2 id="farmSelectTitle">Chọn trại</h2>
-    <p>Chọn đúng trại trước khi xem hoặc lập báo cáo. Dữ liệu được lọc theo mã trại ở máy chủ.</p>
-    <div id="farmList" class="farm-list"></div>
-    <div class="farm-add-row">
-      <input id="newFarmName" type="text" maxlength="120" placeholder="Tên trại mới" autocomplete="off" aria-label="Tên trại mới">
-      <button id="createFarmBtn" type="button">＋ Thêm trại</button>
+    <div class="farm-topbar">
+      <span class="farm-brand-mark" aria-hidden="true">⌂</span>
+      <span class="farm-brand-title">TRẠI GÀ BỐ MẸ</span>
+      <button id="farmMenuBtn" type="button" class="farm-menu-toggle" aria-label="Mở menu quản lý trại" aria-expanded="false" aria-controls="farmMenu">☰</button>
     </div>
-    <div id="farmSelectError" class="farm-error" role="status" aria-live="polite"></div>
-    <button id="enterFarmBtn" type="button" class="farm-enter" disabled>Vào trại đã chọn</button>
+    <div id="farmMenu" class="farm-menu" hidden>
+      <div class="farm-menu-head"><strong>Quản lý trại</strong><button id="farmMenuClose" class="farm-menu-close" type="button" aria-label="Đóng menu">×</button></div>
+      <div class="farm-menu-section">
+        <span class="farm-menu-section-title">Các trại · đổi tên / xóa</span>
+        <div id="farmManageList" class="farm-manage-list"></div>
+      </div>
+      <div class="farm-menu-section">
+        <label class="farm-menu-section-title" for="newFarmName">Thêm trại mới</label>
+        <div class="farm-add-row">
+          <input id="newFarmName" type="text" maxlength="120" placeholder="Tên trại mới" autocomplete="off" aria-label="Tên trại mới">
+          <button id="createFarmBtn" type="button">＋ Thêm trại</button>
+        </div>
+      </div>
+    </div>
+    <main class="farm-content">
+      <h2 id="farmSelectTitle">Chọn trại</h2>
+      <p>Vui lòng chọn trại để tiếp tục làm việc.</p>
+      <div id="farmList" class="farm-list"></div>
+      <div id="farmSelectError" class="farm-error" role="status" aria-live="polite"></div>
+      <button id="enterFarmBtn" type="button" class="farm-enter" disabled>Vào trại đã chọn</button>
+    </main>
   </div>
 </div>
 <div id="mainApp" style="display:none">
@@ -1063,23 +1051,27 @@ function hasLocalFarmDrafts(farmId){
  return false;
 }
 
-function renderFarmChooser(preferredId){
- const list=document.getElementById('farmList');
+function setFarmMenuOpen(open){
+ const menu=document.getElementById('farmMenu');
+ const button=document.getElementById('farmMenuBtn');
+ if(!menu||!button)return;
+ menu.hidden=!open;
+ button.setAttribute('aria-expanded',String(open));
+ button.setAttribute('aria-label',open?'Đóng menu quản lý trại':'Mở menu quản lý trại');
+}
+function renderFarmManagement(){
+ const list=document.getElementById('farmManageList');
  const error=document.getElementById('farmSelectError');
- const enter=document.getElementById('enterFarmBtn');
- if(!list||!enter) return;
+ if(!list)return;
  list.innerHTML='';
- if(error) error.textContent='';
- const remembered=preferredId||localStorage.getItem(FARM_KEY)||'';
+ if(!farms.length){
+  const empty=document.createElement('div');empty.className='farm-empty';empty.textContent='Chưa có trại để quản lý.';list.appendChild(empty);return;
+ }
  farms.forEach(farm=>{
-  const row=document.createElement('div');
-  row.className='farm-choice';
-  const radio=document.createElement('input');
-  radio.type='radio';radio.name='selectedFarm';radio.value=farm.id;
-  radio.checked=farm.id===remembered;
-  const name=document.createElement('span');name.className='farm-choice-name';name.textContent=farm.name;
-  const actions=document.createElement('span');actions.className='farm-choice-actions';
-  const edit=document.createElement('button');edit.type='button';edit.textContent='Sửa';
+  const row=document.createElement('div');row.className='farm-manage-item';
+  const name=document.createElement('span');name.className='farm-manage-name';name.textContent=farm.name;
+  const actions=document.createElement('div');actions.className='farm-manage-actions';
+  const edit=document.createElement('button');edit.type='button';edit.textContent='Đổi tên';
   edit.addEventListener('click',async()=>{
    const value=prompt('Tên trại mới:',farm.name);
    if(value===null)return;
@@ -1089,23 +1081,53 @@ function renderFarmChooser(preferredId){
   const del=document.createElement('button');del.type='button';del.className='farm-delete';del.textContent='Xóa';
   del.disabled=farm.id===DEFAULT_FARM_ID;
   del.title=del.disabled?'Không thể xóa trại mặc định':'';
+  del.setAttribute('aria-label','Xóa trại '+farm.name);
   del.addEventListener('click',async()=>{
    if(hasLocalFarmDrafts(farm.id)){if(error)error.textContent='Trại còn nháp trên thiết bị này. Hãy lưu hoặc xuất nháp trước khi xóa.';return;}
    if(!confirm('Xóa trại “'+farm.name+'”? Trại có báo cáo sẽ bị máy chủ từ chối xóa.'))return;
    try{await api('/api/farms/'+encodeURIComponent(farm.id),{method:'DELETE'});if(localStorage.getItem(FARM_KEY)===farm.id)localStorage.removeItem(FARM_KEY);await refreshFarms();}
    catch(e){if(error)error.textContent=e.message;}
   });
-  radio.addEventListener('change',()=>{enter.disabled=false;});
-  row.addEventListener('click',e=>{if(e.target===edit||e.target===del||e.target===radio)return;radio.checked=true;enter.disabled=false;});
-  actions.append(edit,del);row.append(radio,name,actions);list.appendChild(row);
+  actions.append(edit,del);row.append(name,actions);list.appendChild(row);
+ });
+}
+function renderFarmChooser(preferredId){
+ const list=document.getElementById('farmList');
+ const error=document.getElementById('farmSelectError');
+ const enter=document.getElementById('enterFarmBtn');
+ if(!list||!enter)return;
+ list.innerHTML='';
+ if(error)error.textContent='';
+ const remembered=preferredId||localStorage.getItem(FARM_KEY)||'';
+ farms.forEach(farm=>{
+  const row=document.createElement('div');
+  row.className='farm-choice'+(farm.id===remembered?' is-selected':'');
+  const radio=document.createElement('input');
+  radio.type='radio';radio.name='selectedFarm';radio.value=farm.id;
+  radio.checked=farm.id===remembered;
+  const icon=document.createElement('span');icon.className='farm-choice-icon';icon.setAttribute('aria-hidden','true');
+  icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 3l9 7M5 9v11h14V9M9 20v-6h6v6"/></svg>';
+  const meta=document.createElement('span');meta.className='farm-choice-meta';
+  const name=document.createElement('span');name.className='farm-choice-name';name.textContent=farm.name;
+  const sub=document.createElement('small');sub.className='farm-choice-sub';sub.textContent='Báo cáo và lịch sử riêng của trại';
+  meta.append(name,sub);
+  radio.addEventListener('change',()=>{
+   enter.disabled=false;
+   list.querySelectorAll('.farm-choice').forEach(item=>item.classList.remove('is-selected'));
+   row.classList.add('is-selected');
+  });
+  row.addEventListener('click',e=>{
+   if(e.target!==radio){radio.checked=true;radio.dispatchEvent(new Event('change',{bubbles:true}));}
+  });
+  row.append(icon,meta,radio);list.appendChild(row);
  });
  enter.disabled=!list.querySelector('input[name="selectedFarm"]:checked');
  if(!farms.length){
-  const empty=document.createElement('div');empty.className='empty';empty.textContent='Chưa có trại khả dụng. Hãy thêm trại hoặc kiểm tra quyền truy cập.';list.appendChild(empty);
+  const empty=document.createElement('div');empty.className='empty';empty.textContent='Chưa có trại khả dụng. Hãy mở menu ba gạch để thêm trại.';list.appendChild(empty);
   enter.disabled=true;
  }
+ renderFarmManagement();
 }
-
 async function showFarmChooser(preferredId){
  await refreshFarms();
  const login=document.getElementById('loginScreen');
@@ -1125,12 +1147,13 @@ async function createFarm(){
  try{
   const result=await api('/api/farms',{method:'POST',body:JSON.stringify({name})});
   if(input)input.value='';
+  if(error)error.textContent='';
   await refreshFarms();
   const radio=document.querySelector('input[name="selectedFarm"][value="'+CSS.escape(result.farm.id)+'"]');
-  if(radio){radio.checked=true;document.getElementById('enterFarmBtn').disabled=false;}
+  if(radio){radio.checked=true;radio.dispatchEvent(new Event('change',{bubbles:true}));}
+  setFarmMenuOpen(false);
  }catch(e){if(error)error.textContent=e.message;}
 }
-
 async function enterFarm(farmId){
  const farm=farms.find(item=>item.id===farmId);
  const error=document.getElementById('farmSelectError');
@@ -1183,6 +1206,14 @@ document.getElementById('enterFarmBtn').addEventListener('click',()=>{
  if(radio)enterFarm(radio.value);
 });
 document.getElementById('changeFarmBtn').addEventListener('click',switchFarm);
+const farmMenuBtn=document.getElementById('farmMenuBtn');
+const farmMenu=document.getElementById('farmMenu');
+farmMenuBtn.addEventListener('click',e=>{e.stopPropagation();setFarmMenuOpen(farmMenu.hidden);});
+document.getElementById('farmMenuClose').addEventListener('click',()=>setFarmMenuOpen(false));
+document.addEventListener('click',e=>{
+ if(!farmMenu.hidden&&!farmMenu.contains(e.target)&&e.target!==farmMenuBtn&&!farmMenuBtn.contains(e.target))setFarmMenuOpen(false);
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&farmMenu&&!farmMenu.hidden)setFarmMenuOpen(false);});
 
 async function validateLogin(password){
  const error=$('#loginError');
