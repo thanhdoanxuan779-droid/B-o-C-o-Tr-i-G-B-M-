@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#146c43">
 <title>BÁO CÁO TRẠI GÀ BỐ MẸ</title>
 <style>
@@ -96,7 +96,7 @@ textarea{min-height:76px;resize:vertical}
   padding: 10px !important;
   box-sizing: border-box !important;
   margin: 0 !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
   -webkit-appearance: none;
   appearance: none;
   border: 1px solid #dce5df !important;
@@ -211,7 +211,7 @@ textarea{min-height:76px;resize:vertical}
  .photo-item img{height:100px}
 }
 .footer{text-align:center;color:var(--muted);font-size:10px;padding:15px}
-.draft-status{font-size:11px;padding:9px 11px;margin-bottom:12px;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--muted)}
+.draft-status{font-size:11px;line-height:1.4;padding:9px 11px;margin-bottom:12px;border-radius:10px;background:#fff;border:1px solid var(--line);color:var(--muted);min-height:72px;display:flex;align-items:center;overflow-wrap:anywhere}
 .worker-card{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:10px;background:#fbfdfb}
 .worker-card:last-child{margin-bottom:0}
 .worker-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
@@ -269,6 +269,40 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
 @media(min-width:500px){.content{padding:0 10px}.actions{width:calc(100% - 20px)!important;margin:12px 10px 0!important}}
 @media(max-width:420px){.header.header{width:calc(100% - 16px)!important;margin:8px!important;border-radius:18px!important}.content{padding:0 6px}.actions{width:calc(100% - 12px)!important;margin:10px 6px 0!important}}
 
+
+/* Màn hình chọn/quản lý trại */
+.farm-screen{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;overflow:auto;padding:16px;background:linear-gradient(145deg,#eaf5ee,#f5f8f6);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.farm-panel{width:100%;max-width:460px;max-height:calc(100dvh - 32px);overflow:auto;background:#fff;border:1px solid #e5ebe7;border-radius:22px;padding:20px;box-shadow:0 15px 45px #146c4318}
+.farm-panel h2{font-size:19px;color:#146c43;margin:0 0 6px}
+.farm-panel p{font-size:12px;color:#718078;margin:0 0 14px}
+.farm-list{display:grid;gap:8px;margin:12px 0}
+.farm-choice{display:flex;align-items:center;gap:10px;width:100%;min-height:54px;padding:9px 10px;border:1px solid #dce5df;border-radius:12px;background:#fbfcfb}
+.farm-choice input{width:20px;height:20px;flex:0 0 20px;accent-color:#146c43}
+.farm-choice-name{min-width:0;flex:1;overflow-wrap:anywhere;font-size:14px;font-weight:750;color:#20312a}
+.farm-choice-actions{display:flex;gap:5px;flex:0 0 auto}
+.farm-choice-actions button{border:0;border-radius:8px;padding:8px 9px;font-size:11px;font-weight:750;background:#e9f2ec;color:#146c43}
+.farm-choice-actions .farm-delete{background:#fff0f0;color:#dc3545}
+.farm-add-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:12px}
+.farm-add-row input{min-width:0;width:100%;border:1px solid #dce5df;border-radius:10px;padding:11px;background:#fbfcfb;font:inherit}
+.farm-add-row button,.farm-enter{border:0;border-radius:10px;padding:11px 13px;background:#146c43;color:white;font-weight:800}
+.farm-enter{width:100%;margin-top:8px;min-height:46px}
+.farm-enter:disabled{opacity:.5}
+.farm-error{min-height:18px;margin-top:8px;color:#dc3545;font-size:12px}
+.farm-banner{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding:8px 10px;border:1px solid #ffffff35;border-radius:11px;background:#ffffff14;font-size:12px}
+.farm-banner strong{overflow-wrap:anywhere}
+.farm-banner button{flex:0 0 auto;border:1px solid #ffffff70;border-radius:9px;background:#ffffff18;color:white;padding:7px 9px;font-size:11px;font-weight:750}
+.pdf-farm-label{margin:5px 2px 10px;padding:8px 10px;border:1px solid #dce5df;border-radius:10px;background:#eff8f2;color:#146c43;font-size:12px;font-weight:750;overflow-wrap:anywhere}
+@media(max-width:420px){.farm-panel{padding:16px;border-radius:18px}.farm-choice-actions button{padding:8px 7px}.farm-banner{align-items:flex-start;flex-direction:column}.farm-banner button{width:100%}}
+
+@media(max-width:767px){
+ input,select,textarea{font-size:16px!important}
+}
+@media(max-width:420px){
+ #headerFlock{display:none}
+}
+.stat strong{min-height:32px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.result>strong{white-space:nowrap}
+#eggWarning{min-height:36px;display:flex;align-items:center}
 </style>
 </head>
 <body>
@@ -384,6 +418,20 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
     ">🛡️ Truy cập được bảo vệ bằng mã</div>
   </div>
 </div>
+<div id="farmSelectScreen" class="farm-screen" role="dialog" aria-modal="true" aria-labelledby="farmSelectTitle">
+  <div class="farm-panel">
+    <div style="font-size:32px;margin-bottom:7px" aria-hidden="true">🐔</div>
+    <h2 id="farmSelectTitle">Chọn trại</h2>
+    <p>Chọn đúng trại trước khi xem hoặc lập báo cáo. Dữ liệu được lọc theo mã trại ở máy chủ.</p>
+    <div id="farmList" class="farm-list"></div>
+    <div class="farm-add-row">
+      <input id="newFarmName" type="text" maxlength="120" placeholder="Tên trại mới" autocomplete="off" aria-label="Tên trại mới">
+      <button id="createFarmBtn" type="button">＋ Thêm trại</button>
+    </div>
+    <div id="farmSelectError" class="farm-error" role="status" aria-live="polite"></div>
+    <button id="enterFarmBtn" type="button" class="farm-enter" disabled>Vào trại đã chọn</button>
+  </div>
+</div>
 <div id="mainApp" style="display:none">
 <header class="header" style="border-radius:20px;margin:10px;width:auto;box-sizing:border-box;">
  <div class="top">
@@ -397,8 +445,10 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
   <span class="tag" id="headerFlock">10.005 CON</span>
  </div>
  <p>📋 Báo cáo hằng ngày · Đàn gà · Trứng · Cám · Thiết bị</p>
+ <div class="farm-banner"><span>ĐANG LÀM VIỆC TẠI: <strong id="farmNameBadge">Chưa chọn</strong></span><button type="button" id="changeFarmBtn">Đổi trại</button></div>
 </header>
 <main class="content">
+ <div class="pdf-farm-label">TRẠI: <strong id="pdfFarmName">Chưa chọn</strong></div>
  <div class="summary">
   <div class="stat"><div class="label">TỔNG ĐÀN CUỐI NGÀY</div><strong id="sFlock">10.005</strong><small>con</small></div>
   <div class="stat"><div class="label">TỔNG TRỨNG THU</div>
@@ -423,8 +473,8 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
   <div class="card-head"><div class="num">1</div><div><h2>Đàn gà</h2><p>Theo dõi số lượng sống, chết và loại thải</p></div></div>
   <div class="card-body">
    <div class="grid">
-    <div class="field"><label>Mái sống đầu ngày (con)</label><input name="hensStart" type="number" min="0" value="9600" readonly></div>
-    <div class="field"><label>Trống sống đầu ngày (con)</label><input name="roostersStart" type="number" min="0" value="405" readonly></div>
+    <div class="field"><label>Mái sống đầu ngày (con)</label><input name="hensStart" type="number" min="0" value="0" readonly></div>
+    <div class="field"><label>Trống sống đầu ngày (con)</label><input name="roostersStart" type="number" min="0" value="0" readonly></div>
     <div class="field"><label>Mái chết (con)</label><input name="hensDead" type="number" min="0" value="0"></div>
     <div class="field"><label>Trống chết (con)</label><input name="roostersDead" type="number" min="0" value="0"></div>
     <div class="field"><label>Mái loại thải (con)</label><input name="hensCull" type="number" min="0" value="0"></div>
@@ -434,15 +484,15 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
    </div>
   <div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
   <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">TỔNG ĐÀN MÁI CUỐI NGÀY</span>
-  <strong id="rHensEnd" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">9.600 con</strong>
+  <strong id="rHensEnd" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">0 con</strong>
 </div>
 <div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
   <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">TỔNG ĐÀN TRỐNG CUỐI NGÀY</span>
-  <strong id="rRoostersEnd" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">403 con</strong>
+  <strong id="rRoostersEnd" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">0 con</strong>
 </div>
 <div class="result" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;width:100%;box-sizing:border-box;background:transparent;border:none;padding:0;align-items:stretch;">
   <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;font-weight:700;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">TỔNG ĐÀN SỐNG CUỐI NGÀY</span>
-  <strong id="rFlock" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">10.003 con</strong>
+  <strong id="rFlock" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;color:#198754;line-height:1.4;min-height:44px;box-sizing:border-box;min-width:0;">0 con</strong>
 </div>
    <div class="divider"></div>
    <div class="field"><label>Biểu hiện bất thường</label><select name="abnormal"><option>Không</option><option>Có</option></select></div>
@@ -689,6 +739,9 @@ html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;backg
 const WORKER_URL='https://baocaotraigabome9600con.skzfzqcdfx-08b.workers.dev';
 const PASSWORD_KEY='chickenFarmWorkerPassword';
 const DRAFT_PREFIX='chickenFarmDraft_';
+const COLD_STORE_DRAFT_PREFIX='chickenFarmColdStoreDraft_';
+const FARM_KEY='chickenFarmSelectedId';
+const DEFAULT_FARM_ID='farm_default_9600';
 const PHOTO_DB_NAME='chickenFarmPhotoDrafts';
 const form=document.getElementById('reportForm');
 const $=s=>document.querySelector(s);
@@ -710,6 +763,10 @@ let photoRestoreToken=0;
 let photoDbPromise=null;
 let photoWriteQueue=Promise.resolve();
 let reports=[];
+let farms=[];
+let selectedFarm=null;
+let reportDirty=false;
+let currentReportFarmName='';
 let busy=false;
 let restoringDraft=false;
 let draftTimer=null;
@@ -719,6 +776,19 @@ let workers=[
 ];
 
 $('#date').value=today();
+
+function setInitialFlockEditable(editable){
+ form.elements.hensStart.readOnly=!editable;
+ form.elements.roostersStart.readOnly=!editable;
+}
+
+function setReportFarmName(name){
+ currentReportFarmName=String(name||selectedFarm?.name||'');
+ const badge=document.getElementById('farmNameBadge');
+ const pdfBadge=document.getElementById('pdfFarmName');
+ if(badge) badge.textContent=currentReportFarmName||'Chưa chọn';
+ if(pdfBadge) pdfBadge.textContent=currentReportFarmName||'Chưa chọn';
+}
 
 function statusDraft(message,color){
  const el=$('#draftStatus');
@@ -754,7 +824,7 @@ function savePhotoDraftRecord(date,list){
   await new Promise((resolve,reject)=>{
    let tx;
    try{tx=db.transaction('drafts','readwrite');}catch(e){reject(e);return;}
-   tx.objectStore('drafts').put({date:String(date),photos:clean,updatedAt:Date.now()});
+   tx.objectStore('drafts').put({date:photoDraftKey(date),photos:clean,updatedAt:Date.now()});
    tx.oncomplete=resolve;
    tx.onerror=()=>reject(tx.error||new Error('Không lưu được ảnh vào IndexedDB.'));
    tx.onabort=()=>reject(tx.error||new Error('Giao dịch lưu ảnh bị hủy.'));
@@ -769,9 +839,15 @@ async function readPhotoDraftRecord(date){
  const db=await openPhotoDraftDb();
  return new Promise((resolve,reject)=>{
   let tx,request;
-  try{tx=db.transaction('drafts','readonly');request=tx.objectStore('drafts').get(String(date));}
+  try{tx=db.transaction('drafts','readonly');request=tx.objectStore('drafts').get(photoDraftKey(date));}
   catch(e){reject(e);return;}
-  request.onsuccess=()=>resolve(request.result||null);
+  request.onsuccess=()=>{
+   if(request.result){resolve(request.result);return;}
+   if(selectedFarm?.id!==DEFAULT_FARM_ID){resolve(null);return;}
+   let legacy;try{legacy=tx.objectStore('drafts').get(String(date));}catch(e){resolve(null);return;}
+   legacy.onsuccess=()=>resolve(legacy.result||null);
+   legacy.onerror=()=>resolve(null);
+  };
   request.onerror=()=>reject(request.error||new Error('Không đọc được ảnh đã lưu.'));
   tx.onerror=()=>reject(tx.error||new Error('Lỗi đọc kho ảnh.'));
  });
@@ -780,9 +856,10 @@ async function readPhotoDraftRecord(date){
 async function restorePhotoDraft(date){
  const token=++photoRestoreToken;
  const version=photoMutationVersion;
+ const farmId=selectedFarm?.id||'';
  try{
   const record=await readPhotoDraftRecord(date);
-  if(token!==photoRestoreToken||version!==photoMutationVersion||$('#date').value!==date||!record||!Array.isArray(record.photos)) return;
+  if(token!==photoRestoreToken||version!==photoMutationVersion||selectedFarm?.id!==farmId||$('#date').value!==date||!record||!Array.isArray(record.photos)) return;
   photos=record.photos.filter(p=>p&&typeof p.url==='string'&&p.url.startsWith('data:image/'));
   photosDirty=false;
   photosStoredInLocal=false;
@@ -803,6 +880,10 @@ async function api(path,options={}){
   ...(options.headers||{}),
   'X-App-Password':password
  };
+ if(path==='/api/reports'||path.startsWith('/api/reports?')||path==='/api/feed-total'){
+  if(!selectedFarm) throw new Error('Hãy chọn trại trước khi truy cập báo cáo.');
+  headers['X-Farm-Id']=selectedFarm.id;
+ }
  const res=await fetch(WORKER_URL+path,{...options,headers});
  let result;
  try{result=await res.json();}
@@ -827,8 +908,8 @@ function updateCumulativeEggs(){
   try{
     for(let i=0;i<localStorage.length;i++){
       const key=localStorage.key(i);
-      if(!key||!key.startsWith(DRAFT_PREFIX)) continue;
-      const date=key.slice(DRAFT_PREFIX.length);
+      if(!key||!key.startsWith(scopedStoragePrefix(DRAFT_PREFIX))) continue;
+      const date=key.slice(scopedStoragePrefix(DRAFT_PREFIX).length);
       if(/^\d{4}-\d{2}-\d{2}$/.test(date)&&date<=currentDate) dates.add(date);
     }
   }catch(e){console.warn('Không đọc được danh sách nháp để tính trứng lũy kế.',e);}
@@ -969,87 +1050,193 @@ function addWorker(){
 $('#addWorkerBtn').addEventListener('click',addWorker);
 
 /* ĐĂNG NHẬP */
+async function refreshFarms(){
+ const result=await api('/api/farms');
+ farms=Array.isArray(result.farms)?result.farms:[];
+ renderFarmChooser();
+ return farms;
+}
+
+function hasLocalFarmDrafts(farmId){
+ const prefixes=[DRAFT_PREFIX+encodeURIComponent(farmId)+'_',COLD_STORE_DRAFT_PREFIX+encodeURIComponent(farmId)+'_'];
+ try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&prefixes.some(prefix=>key.startsWith(prefix)))return true;}}catch(e){}
+ return false;
+}
+
+function renderFarmChooser(preferredId){
+ const list=document.getElementById('farmList');
+ const error=document.getElementById('farmSelectError');
+ const enter=document.getElementById('enterFarmBtn');
+ if(!list||!enter) return;
+ list.innerHTML='';
+ if(error) error.textContent='';
+ const remembered=preferredId||localStorage.getItem(FARM_KEY)||'';
+ farms.forEach(farm=>{
+  const row=document.createElement('div');
+  row.className='farm-choice';
+  const radio=document.createElement('input');
+  radio.type='radio';radio.name='selectedFarm';radio.value=farm.id;
+  radio.checked=farm.id===remembered;
+  const name=document.createElement('span');name.className='farm-choice-name';name.textContent=farm.name;
+  const actions=document.createElement('span');actions.className='farm-choice-actions';
+  const edit=document.createElement('button');edit.type='button';edit.textContent='Sửa';
+  edit.addEventListener('click',async()=>{
+   const value=prompt('Tên trại mới:',farm.name);
+   if(value===null)return;
+   try{await api('/api/farms/'+encodeURIComponent(farm.id),{method:'PATCH',body:JSON.stringify({name:value})});await refreshFarms();}
+   catch(e){if(error)error.textContent=e.message;}
+  });
+  const del=document.createElement('button');del.type='button';del.className='farm-delete';del.textContent='Xóa';
+  del.disabled=farm.id===DEFAULT_FARM_ID;
+  del.title=del.disabled?'Không thể xóa trại mặc định':'';
+  del.addEventListener('click',async()=>{
+   if(hasLocalFarmDrafts(farm.id)){if(error)error.textContent='Trại còn nháp trên thiết bị này. Hãy lưu hoặc xuất nháp trước khi xóa.';return;}
+   if(!confirm('Xóa trại “'+farm.name+'”? Trại có báo cáo sẽ bị máy chủ từ chối xóa.'))return;
+   try{await api('/api/farms/'+encodeURIComponent(farm.id),{method:'DELETE'});if(localStorage.getItem(FARM_KEY)===farm.id)localStorage.removeItem(FARM_KEY);await refreshFarms();}
+   catch(e){if(error)error.textContent=e.message;}
+  });
+  radio.addEventListener('change',()=>{enter.disabled=false;});
+  row.addEventListener('click',e=>{if(e.target===edit||e.target===del||e.target===radio)return;radio.checked=true;enter.disabled=false;});
+  actions.append(edit,del);row.append(radio,name,actions);list.appendChild(row);
+ });
+ enter.disabled=!list.querySelector('input[name="selectedFarm"]:checked');
+ if(!farms.length){
+  const empty=document.createElement('div');empty.className='empty';empty.textContent='Chưa có trại khả dụng. Hãy thêm trại hoặc kiểm tra quyền truy cập.';list.appendChild(empty);
+  enter.disabled=true;
+ }
+}
+
+async function showFarmChooser(preferredId){
+ await refreshFarms();
+ const login=document.getElementById('loginScreen');
+ const app=document.getElementById('mainApp');
+ const chooser=document.getElementById('farmSelectScreen');
+ if(login)login.style.display='none';
+ if(app)app.style.display='none';
+ if(chooser)chooser.style.display='flex';
+ renderFarmChooser(preferredId);
+}
+
+async function createFarm(){
+ const input=document.getElementById('newFarmName');
+ const error=document.getElementById('farmSelectError');
+ const name=String(input?.value||'').trim();
+ if(!name){if(error)error.textContent='Nhập tên trại trước khi thêm.';input?.focus();return;}
+ try{
+  const result=await api('/api/farms',{method:'POST',body:JSON.stringify({name})});
+  if(input)input.value='';
+  await refreshFarms();
+  const radio=document.querySelector('input[name="selectedFarm"][value="'+CSS.escape(result.farm.id)+'"]');
+  if(radio){radio.checked=true;document.getElementById('enterFarmBtn').disabled=false;}
+ }catch(e){if(error)error.textContent=e.message;}
+}
+
+async function enterFarm(farmId){
+ const farm=farms.find(item=>item.id===farmId);
+ const error=document.getElementById('farmSelectError');
+ if(!farm){if(error)error.textContent='Trại đã chọn không còn khả dụng. Hãy tải lại danh sách.';return;}
+ try{
+  selectedFarm=farm;
+  localStorage.setItem(FARM_KEY,farm.id);
+  await migrateLegacyLocalDrafts(farm.id);
+  setReportFarmName(farm.name);
+  const loaded=await loadHistory();
+  if(!loaded)throw new Error('Không tải được báo cáo của trại này. Chưa mở biểu mẫu để tránh ghi/lọc nhầm dữ liệu.');
+  const todayData=getSavedData(today());
+  if(todayData){restoreDraft(today(),false);}
+  else{restoreDraft(today(),true);}
+  restoreColdStoreDraft(today());
+  if(loaded){
+   const stock=getEggStockBeforeDate(today());
+   if(stock!==null)form.elements.eggStockStart.value=stock;
+   calc();
+   await saveLocalDraft();
+  }
+  reportDirty=false;
+  const chooser=document.getElementById('farmSelectScreen');
+  if(chooser)chooser.style.display='none';
+  document.getElementById('mainApp').style.display='block';
+ }catch(e){
+  console.error('Không thể vào trại:',e);
+  if(error)error.textContent=e.message||'Không thể mở trại.';
+  selectedFarm=null;
+ }
+}
+
+async function switchFarm(){
+ if(reportDirty&&!confirm('Báo cáo hiện tại có thay đổi chưa lưu lên máy chủ. Nháp sẽ được lưu trên thiết bị trước khi đổi trại. Bạn có muốn tiếp tục?'))return;
+ if(selectedFarm&&$('#date').value){
+  const persisted=await saveLocalDraft();
+  if(reportDirty&&!persisted){alert('Không lưu được nháp trên thiết bị. Hãy giải phóng dung lượng rồi thử đổi trại lại.');return;}
+ }
+ clearTimeout(draftTimer);
+ reportDirty=false;
+ reports=[];
+ selectedFarm=null;
+ await showFarmChooser(localStorage.getItem(FARM_KEY)||'');
+}
+
+document.getElementById('createFarmBtn').addEventListener('click',createFarm);
+document.getElementById('newFarmName').addEventListener('keydown',e=>{if(e.key==='Enter')createFarm();});
+document.getElementById('enterFarmBtn').addEventListener('click',()=>{
+ const radio=document.querySelector('input[name="selectedFarm"]:checked');
+ if(radio)enterFarm(radio.value);
+});
+document.getElementById('changeFarmBtn').addEventListener('click',switchFarm);
+
 async function validateLogin(password){
  const error=$('#loginError');
  const btn=$('#loginBtn');
  error.textContent='';
-
- if(!password){
-  error.textContent='Vui lòng nhập mã truy cập.';
-  return;
- }
-
- btn.disabled=true;
- btn.textContent='ĐANG KIỂM TRA…';
-
+ if(!password){error.textContent='Vui lòng nhập mã truy cập.';return;}
+ btn.disabled=true;btn.textContent='ĐANG KIỂM TRA…';
  try{
-  const res=await fetch(WORKER_URL+'/api/login',{
-   method:'POST',
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({password})
-  });
+  const res=await fetch(WORKER_URL+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});
   const result=await res.json();
-
-  if(!res.ok||!result.ok){
-   localStorage.removeItem(PASSWORD_KEY);
-   error.textContent='Mã truy cập không đúng. Vui lòng thử lại.';
-   $('#loginPassword').value='';
-   $('#loginPassword').focus();
-   return;
-  }
-
+  if(!res.ok||!result.ok){localStorage.removeItem(PASSWORD_KEY);error.textContent=result.error||'Mã truy cập không đúng. Vui lòng thử lại.';$('#loginPassword').value='';$('#loginPassword').focus();return;}
   localStorage.setItem(PASSWORD_KEY,password);
-
-  renderWorkers();
-calc();
-
-// Tải báo cáo D1 trước, sau đó mới khôi phục và lấy số liệu ngày trước
-const historyLoaded=await loadHistory();
-const todayData=getSavedData(today());
-if(todayData){
- restoreDraft(today(),false);
-}else if(historyLoaded){
- restoreDraft(today(),true);
-}else{
- $('#date').value=today();
- calc();
- statusDraft('Chưa tải được lịch sử máy chủ. Chưa tạo nháp mới để tránh ghi đè số liệu; hãy kiểm tra kết nối.','#dc3545');
-}
-restoreColdStoreDraft(today());
-if(historyLoaded){
- const stock=getEggStockBeforeDate(today());
- if(stock!==null) form.elements.eggStockStart.value=stock;
- calc();
- saveLocalDraft();
-}else{
- calc();
-}
-$('#loginScreen').style.display='none';
-$('#mainApp').style.display='block';
-
- }catch(e){
-  error.textContent='Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
- }finally{
-  btn.disabled=false;
-  btn.textContent='VÀO ỨNG DỤNG　→';
- }
+  await showFarmChooser(localStorage.getItem(FARM_KEY)||'');
+ }catch(e){error.textContent='Không kết nối được máy chủ: '+e.message;}
+ finally{btn.disabled=false;btn.textContent='VÀO ỨNG DỤNG　→';}
 }
 
-$('#loginBtn').addEventListener('click',()=>{
- validateLogin($('#loginPassword').value.trim());
-});
+$('#loginBtn').addEventListener('click',()=>validateLogin($('#loginPassword').value.trim()));
+$('#loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')validateLogin($('#loginPassword').value.trim());});
 
-$('#loginPassword').addEventListener('keydown',e=>{
- if(e.key==='Enter') validateLogin($('#loginPassword').value.trim());
-});
+function scopedStoragePrefix(prefix){
+ return selectedFarm?prefix+encodeURIComponent(selectedFarm.id)+'_':prefix;
+}
+function draftKey(date){return scopedStoragePrefix(DRAFT_PREFIX)+String(date||'').slice(0,10);}
+function coldStoreDraftKey(date){return scopedStoragePrefix(COLD_STORE_DRAFT_PREFIX)+String(date||'').slice(0,10);}
+function photoDraftKey(date){return (selectedFarm?selectedFarm.id:DEFAULT_FARM_ID)+':'+String(date||'').slice(0,10);}
 
-const COLD_STORE_DRAFT_PREFIX='chickenFarmColdStoreDraft_';
+async function migrateLegacyLocalDrafts(farmId){
+ if(farmId!==DEFAULT_FARM_ID) return;
+ try{
+  const keys=[];
+  for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key)keys.push(key);}
+  for(const key of keys){
+   for(const prefix of [DRAFT_PREFIX,COLD_STORE_DRAFT_PREFIX]){
+    if(!key.startsWith(prefix)) continue;
+    const suffix=key.slice(prefix.length);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(suffix)) continue;
+    const destination=prefix+encodeURIComponent(farmId)+'_'+suffix;
+    if(localStorage.getItem(destination)!==null) continue;
+    let value=localStorage.getItem(key);
+    if(prefix===DRAFT_PREFIX){
+     try{const data=JSON.parse(value);if(data&&typeof data==='object'){data.farmId=farmId;data.farmNameSnapshot=selectedFarm?.name||'Trại mặc định';value=JSON.stringify(data);}}catch(e){}
+    }
+    localStorage.setItem(destination,value);
+   }
+  }
+ }catch(e){console.warn('Không thể sao chép toàn bộ nháp cũ sang khóa trại mặc định:',e);}
+}
 
 function saveColdStoreDraft(date){
  date=String(date||$('#date').value||'').slice(0,10);
  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
  try{
-  localStorage.setItem(COLD_STORE_DRAFT_PREFIX+date,JSON.stringify({
+  localStorage.setItem(coldStoreDraftKey(date),JSON.stringify({
    eggHandover:form.elements.eggHandover.value,
    coldStoreOut:form.elements.coldStoreOut.value,
    savedAt:Date.now()
@@ -1061,7 +1248,7 @@ function restoreColdStoreDraft(date){
  date=String(date||'').slice(0,10);
  if(!date) return false;
  try{
-  const raw=localStorage.getItem(COLD_STORE_DRAFT_PREFIX+date);
+  const raw=localStorage.getItem(coldStoreDraftKey(date));
   if(!raw) return false;
   const saved=JSON.parse(raw);
   const report=(Array.isArray(reports)?reports:[]).find(r=>String(r.date||'').slice(0,10)===date);
@@ -1088,16 +1275,16 @@ function calculateColdStore(date,currentIn,currentOut){
  try{
   for(let i=0;i<localStorage.length;i++){
    const key=localStorage.key(i);
-   if(!key||!key.startsWith(DRAFT_PREFIX)) continue;
-   const d=key.slice(DRAFT_PREFIX.length);
+   if(!key||!key.startsWith(scopedStoragePrefix(DRAFT_PREFIX))) continue;
+   const d=key.slice(scopedStoragePrefix(DRAFT_PREFIX).length);
    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>=target||daily.has(d)) continue;
    const data=parseReportData(localStorage.getItem(key));
    if(data) daily.set(d,data);
   }
   for(let i=0;i<localStorage.length;i++){
    const key=localStorage.key(i);
-   if(!key||!key.startsWith(COLD_STORE_DRAFT_PREFIX)) continue;
-   const d=key.slice(COLD_STORE_DRAFT_PREFIX.length);
+   if(!key||!key.startsWith(scopedStoragePrefix(COLD_STORE_DRAFT_PREFIX))) continue;
+   const d=key.slice(scopedStoragePrefix(COLD_STORE_DRAFT_PREFIX).length);
    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>=target||daily.has(d)) continue;
    try{
     const cold=JSON.parse(localStorage.getItem(key)||'null');
@@ -1209,7 +1396,9 @@ data.photos=photos.map(p=>({
   url:p.url
 }));
 
-data.savedAt=new Date().toISOString();
+data.farmId=selectedFarm?.id||'';
+ data.farmNameSnapshot=selectedFarm?.name||currentReportFarmName||'';
+ data.savedAt=new Date().toISOString();
 
 return data;
 }
@@ -1282,7 +1471,7 @@ async function saveLocalDraft(){
 
   const metadata=photoList.map(p=>({name:p.name,type:p.type}));
   data.photos=photoSavedSeparately?metadata:(photosStoredInLocal?photoList:metadata);
-  try{localStorage.setItem(DRAFT_PREFIX+date,JSON.stringify(data));}
+  try{localStorage.setItem(draftKey(date),JSON.stringify(data));}
   catch(e){
    localError=e;
    if(photoList.length&&!photoSavedSeparately){
@@ -1292,7 +1481,7 @@ async function saveLocalDraft(){
      photosDirty=false;
      photosStoredInLocal=false;
      data.photos=metadata;
-     localStorage.setItem(DRAFT_PREFIX+date,JSON.stringify(data));
+     localStorage.setItem(draftKey(date),JSON.stringify(data));
      localError=null;
     }catch(idbError){console.warn('Không thể chuyển ảnh sang kho riêng:',idbError);}
    }
@@ -1326,6 +1515,7 @@ async function saveLocalDraft(){
 
 function scheduleDraftSave(){
  if(restoringDraft) return;
+ reportDirty=true;
  statusDraft('Đang lưu nháp trên thiết bị…');
  clearTimeout(draftTimer);
  draftTimer=setTimeout(saveLocalDraft,350);
@@ -1362,7 +1552,7 @@ function getSavedData(date){
  const report=reports.find(r=>reportDate(r)===date);
  const serverData=report?.data?parseReportData(report.data):null;
  let localData=null;
- try{localData=parseReportData(localStorage.getItem(DRAFT_PREFIX+date));}catch(e){}
+ try{localData=parseReportData(localStorage.getItem(draftKey(date)));}catch(e){}
  if(serverData&&localData){
   const serverTime=Date.parse(serverData.savedAt||report?.updatedAt||report?.updated_at||'')||0;
   const localTime=Date.parse(localData.savedAt||'')||0;
@@ -1381,8 +1571,8 @@ function getPreviousReportData(date){
  try{
   for(let i=0;i<localStorage.length;i++){
    const key=localStorage.key(i);
-   if(!key||!key.startsWith(DRAFT_PREFIX)) continue;
-   const d=key.slice(DRAFT_PREFIX.length);
+   if(!key||!key.startsWith(scopedStoragePrefix(DRAFT_PREFIX))) continue;
+   const d=key.slice(scopedStoragePrefix(DRAFT_PREFIX).length);
    if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<target) dates.add(d);
   }
  }catch(e){console.warn('Không đọc được nháp ngày trước.',e);}
@@ -1424,8 +1614,8 @@ function getEggStockBeforeDate(date){
  try{
   for(let i=0;i<localStorage.length;i++){
    const key=localStorage.key(i);
-   if(!key||!key.startsWith(DRAFT_PREFIX)) continue;
-   const d=key.slice(DRAFT_PREFIX.length);
+   if(!key||!key.startsWith(scopedStoragePrefix(DRAFT_PREFIX))) continue;
+   const d=key.slice(scopedStoragePrefix(DRAFT_PREFIX).length);
    if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&d<target) dates.add(d);
   }
  }catch(e){console.warn('Không đọc được nháp để tính tồn trứng.',e);}
@@ -1450,7 +1640,9 @@ function restoreDraft(date,resetWhenMissing){
 
  try{
   const saved=getSavedData(date);
+  setReportFarmName(saved?.farmNameSnapshot||selectedFarm?.name||'');
   const prev=getPreviousReportData(date);
+  setInitialFlockEditable(!prev);
   const previousEggStock=getEggStockBeforeDate(date);
 
   const isServerReport=(reports||[]).some(
@@ -1458,6 +1650,7 @@ function restoreDraft(date,resetWhenMissing){
   );
 
   if(saved){
+   setReportFarmName(saved.farmNameSnapshot||selectedFarm?.name||'');
    setData(saved);
    $('#date').value=date;
    restorePhotoDraft(date);
@@ -1515,6 +1708,7 @@ function restoreDraft(date,resetWhenMissing){
    return false;
   }
 
+  setReportFarmName(selectedFarm?.name||'');
   form.reset();
   $('#date').value=date;
 
@@ -1534,8 +1728,8 @@ function restoreDraft(date,resetWhenMissing){
   $('#photoList').innerHTML='';
   restorePhotoDraft(date);
 
-  form.elements.hensStart.value=9600;
-  form.elements.roostersStart.value=405;
+  form.elements.hensStart.value=0;
+  form.elements.roostersStart.value=0;
   form.elements.feedStart.value=0;
   form.elements.feed2Start.value=0;
 
@@ -1743,8 +1937,12 @@ async function save(){
   btn.disabled=true;
   btn.textContent='Đang lưu lên D1…';
 
+  const existingReport=reports.find(r=>reportDate(r)===data.date);
   const serverData={
   ...data,
+  farmId:selectedFarm.id,
+  farmNameSnapshot:selectedFarm.name,
+  expectedVersion:existingReport?Number(existingReport.version||1):null,
   photos:(data.photos||[]).map(p=>({
     name:p.name,
     type:p.type
@@ -1756,7 +1954,8 @@ await api('/api/reports',{
   body:JSON.stringify(serverData)
 });
   saveColdStoreDraft(data.date);
-  saveLocalDraft();
+  await saveLocalDraft();
+  reportDirty=false;
   await loadHistory();
 
   alert('Đã lưu báo cáo ngày '+data.date.split('-').reverse().join('/')+' lên máy chủ thành công.');
@@ -2294,6 +2493,7 @@ $('#photos').addEventListener('change', async function () {
         const photo=await compressPhoto(file);
         photos.push(photo);
         photosDirty=true;
+        reportDirty=true;
         photosStoredInLocal=false;
         photoMutationVersion++;
         photoRestoreToken++;
@@ -2319,92 +2519,31 @@ $('#photos').addEventListener('change', async function () {
 });
 /* TỰ ĐĂNG NHẬP - LUÔN KIỂM TRA ÍT NHẤT 1,5 GIÂY */
 async function autoLogin() {
-  const password = localStorage.getItem(PASSWORD_KEY);
-  if (!password) return;
-  const loginScreen = document.getElementById('loginScreen');
-  const mainApp = document.getElementById('mainApp');
-  const btn = document.getElementById('loginBtn');
-  if (loginScreen) loginScreen.style.display = 'block';
-  if (mainApp) mainApp.style.display = 'none';
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Đang kiểm tra...';
-  }
-  const startTime = Date.now();
-  try {
-    const res = await fetch(WORKER_URL + '/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password })
-    });
-    const result = await res.json();
-    // Giữ màn hình kiểm tra ít nhất 1,5 giây
-    const remaining = 1500 - (Date.now() - startTime);
-    if (remaining > 0) {
-      await new Promise(resolve => setTimeout(resolve, remaining));
-    }
-    if (!res.ok || !result.ok) {
-      localStorage.removeItem(PASSWORD_KEY);
-      if (loginScreen) loginScreen.style.display = 'block';
-      if (mainApp) mainApp.style.display = 'none';
-      return;
-    }
-    renderWorkers();
-    calc();
-    // Tải lịch sử trước khi khôi phục để tránh tạo nháp rỗng đè báo cáo D1.
-    const historyLoaded = await loadHistory();
-    const todayData = getSavedData(today());
-    if (todayData) {
-      restoreDraft(today(), false);
-    } else if (historyLoaded) {
-      restoreDraft(today(), true);
-    } else {
-      document.getElementById('date').value = today();
-      calc();
-      statusDraft('Chưa tải được lịch sử máy chủ. Chưa tạo nháp mới để tránh ghi đè số liệu; hãy kiểm tra kết nối.', '#dc3545');
-    }
-    restoreColdStoreDraft(today());
-    calc();
-    if (loginScreen) loginScreen.style.display = 'none';
-    if (mainApp) mainApp.style.display = 'block';
-  } catch (e) {
-    console.error('Tự đăng nhập thất bại:', e);
-    if (loginScreen) loginScreen.style.display = 'block';
-    if (mainApp) mainApp.style.display = 'none';
-    // Lỗi mạng thì giữ mật khẩu để thử lại
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = 'Đăng nhập';
-    }
-  }
+  const password=localStorage.getItem(PASSWORD_KEY);
+  if(!password)return;
+  const loginScreen=document.getElementById('loginScreen');
+  const mainApp=document.getElementById('mainApp');
+  const chooser=document.getElementById('farmSelectScreen');
+  const btn=document.getElementById('loginBtn');
+  if(loginScreen)loginScreen.style.display='block';
+  if(mainApp)mainApp.style.display='none';
+  if(chooser)chooser.style.display='none';
+  if(btn){btn.disabled=true;btn.textContent='Đang kiểm tra...';}
+  const startTime=Date.now();
+  try{
+    const res=await fetch(WORKER_URL+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})});
+    const result=await res.json();
+    const remaining=1500-(Date.now()-startTime);
+    if(remaining>0)await new Promise(resolve=>setTimeout(resolve,remaining));
+    if(!res.ok||!result.ok){localStorage.removeItem(PASSWORD_KEY);return;}
+    await showFarmChooser(localStorage.getItem(FARM_KEY)||'');
+  }catch(e){console.error('Tự đăng nhập thất bại:',e);if(loginScreen)loginScreen.style.display='block';}
+  finally{if(btn){btn.disabled=false;btn.textContent='VÀO ỨNG DỤNG　→';}}
 }
 autoLogin();
-/* CHẶN KÉO VƯỢT ĐẦU / CUỐI TRANG */
-(function preventPageBounce() {
-  const page = document.documentElement;
-  const body = document.body;
-  page.style.overscrollBehavior = 'none';
-  body.style.overscrollBehavior = 'none';
-  let lastY = 0;
-  document.addEventListener('touchstart', function (e) {
-    if (e.touches.length !== 1) return;
-    lastY = e.touches[0].clientY;
-  }, { passive: true });
-  document.addEventListener('touchmove', function (e) {
-    if (e.touches.length !== 1) return;
-    const y = e.touches[0].clientY;
-    const dy = y - lastY;
-    lastY = y;
-    const scroller = document.scrollingElement || page;
-    const maxScroll = scroller.scrollHeight - window.innerHeight;
-    const top = scroller.scrollTop <= 0;
-    const bottom = scroller.scrollTop >= maxScroll - 1;
-    if ((top && dy > 0) || (bottom && dy < 0)) {
-      e.preventDefault();
-    }
-  }, { passive: false });
-})();
+/* Ngăn overscroll bằng CSS; tránh touchmove preventDefault khi bàn phím di động đổi viewport. */
+document.documentElement.style.overscrollBehaviorY = 'none';
+document.body.style.overscrollBehaviorY = 'none';
 const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
 const historyPanel = document.getElementById('historyPanel');
 if (toggleHistoryBtn && historyPanel) {
